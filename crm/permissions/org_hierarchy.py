@@ -14,7 +14,7 @@ def hierarchy_enabled() -> bool:
 	return bool(frappe.db.get_single_value("FCRM Settings", "enable_sales_hierarchy"))
 
 
-def _permission_query_conditions(user: str | None, doctype: str):
+def _permission_query_conditions(user: str | None, doctype: str, ptype: str = "read"):
 	if not user:
 		user = frappe.session.user
 
@@ -22,7 +22,7 @@ def _permission_query_conditions(user: str | None, doctype: str):
 		return ""
 
 	roles = frappe.get_roles(user)
-	if "System Manager" in roles:
+	if "System Manager" in roles or _unrestricted(user, doctype, ptype):
 		return ""
 
 	in_tree = hierarchy_enabled() and _in_hierarchy(user)
@@ -60,6 +60,16 @@ def _permission_query_conditions(user: str | None, doctype: str):
 	return q1 | q2
 
 
+def _unrestricted(user: str, doctype: str, ptype: str | None) -> bool:
+	"""TBO: other apps may let a user see every record past the hierarchy, e.g. tbo_smart's
+	finance roles reading deals (docs/tbo-finance.md). Each hook is called with
+	(user, doctype, ptype) and returns True to allow."""
+	return any(
+		frappe.get_attr(method)(user, doctype, ptype)
+		for method in frappe.get_hooks("crm_unrestricted_access")
+	)
+
+
 def get_lead_permission_query_conditions(user=None):
 	cond = _permission_query_conditions(user, "CRM Lead")
 	return cond.get_sql(with_namespace=True, quote_char="`", secondary_quote_char="'") if cond else ""
@@ -78,7 +88,7 @@ def _has_permission(doc, ptype, user, doctype: str) -> bool | None:
 		return True
 
 	roles = frappe.get_roles(user)
-	if "System Manager" in roles:
+	if "System Manager" in roles or _unrestricted(user, doctype, ptype):
 		return True
 
 	if ptype == "create" or not doc.name:
@@ -88,7 +98,7 @@ def _has_permission(doc, ptype, user, doctype: str) -> bool | None:
 	if "Sales Manager" in roles and not in_tree:
 		return True
 
-	conditions = _permission_query_conditions(user, doctype)
+	conditions = _permission_query_conditions(user, doctype, ptype)
 	DT = frappe.qb.DocType(doctype)
 	return bool(
 		frappe.qb.from_(DT).select(DT.name).where(DT.name == doc.name).where(conditions).limit(1).run()
