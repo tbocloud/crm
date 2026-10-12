@@ -20,7 +20,9 @@ import { useTelemetry } from 'frappe-ui/frappe'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PERSONA_DONE_KEY } from '@/router'
+import { getSettings } from '@/stores/settings'
 
+const { brand } = getSettings()
 const router = useRouter()
 const { capture } = useTelemetry()
 const leaving = ref(false)
@@ -105,7 +107,7 @@ const questions = computed(() => [
   },
   {
     key: 'team_size',
-    title: __('How many people will use Frappe CRM?'),
+    title: __('How many people will use {0}?', [brand.name]),
     options: [
       { label: __('Just me'), value: 'just_me' },
       { label: __('2–5'), value: '2_5' },
@@ -129,5 +131,5 @@ const questions = computed(() => [
   },
 ])
 
-usePageMeta(() => ({ title: __('Welcome to Frappe CRM') }))
+usePageMeta(() => ({ title: __('Welcome to {0}', [brand.name]) }))
 </script>

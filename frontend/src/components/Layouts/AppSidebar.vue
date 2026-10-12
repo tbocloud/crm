@@ -158,6 +158,7 @@
       v-model="showHelpModal"
       v-model:articles="articles"
       :logo="CRMLogo"
+      :title="brand.name"
       :afterSkip="(step) => capture('onboarding_step_skipped_' + step)"
       :afterSkipAll="() => capture('onboarding_steps_skipped')"
       :afterReset="(step) => capture('onboarding_step_reset_' + step)"
@@ -227,11 +228,13 @@ import {
   useTelemetry,
 } from 'frappe-ui/frappe'
 import router from '@/router'
+import { getSettings } from '@/stores/settings'
 import { useStorage } from '@vueuse/core'
 import { useDemoData } from '@/composables/demoData'
 import { ref, reactive, computed, markRaw, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
+const { brand } = getSettings()
 const props = defineProps({
   mobile: { type: Boolean, default: false },
 })
