@@ -51,6 +51,35 @@ sort, and there is a total row. The table scrolls sideways on a phone. A
 salesperson sees their own row, a manager their team, and Sales Managers,
 System Managers and the finance roles see everyone.
 
+## What users see (Phase 2)
+
+Behind **TBO Smart Settings → Receivables and reminders (Phase 2)** as well.
+
+- **Receivables** (`/crm/receivables`, sidebar). Ageing totals per currency
+  (outstanding, overdue, not due, 1-30, 31-60, 61-90, 90+ days by each term's
+  due date), then an Invoices / Clients switch. Each invoice row shows the
+  client and company, due date and days overdue, outstanding, overdue, BDE and
+  accounts owner, escalation level, last reminder, promise to pay and any open
+  exception, with **Follow-up** and **Exception** actions. Filters: client,
+  company, BDE, accounts owner. **Export** downloads the rows as CSV. A
+  salesperson sees only their own (or team's) deals; with "BDE can see
+  invoice/payment amounts" off they get the not-permitted state and no sidebar
+  entry.
+- **Follow-up dialog:** next date, remark, promised date and amount. It
+  updates the invoice's collection task (or creates one), so the CRM Tasks
+  page's **Collections** view (added by tbo_smart) lists it.
+- **Exception dialog:** extend the due date, pause reminders, client dispute
+  or write-off, for the whole invoice or one term, with a reason (and the
+  credit note or journal entry for a write-off). It is sent straight for
+  approval.
+- **Finance exceptions** (`/crm/finance-exceptions`, sidebar). Tabs *Waiting
+  for a decision* (approvers), *Open* and *All*. Approve or Reject (a reason is
+  required) for a TBO Finance Approver who did not raise or send the request;
+  Reopen for rejected ones.
+- **Deal → Finance tab:** accounts owner (editable by accounts and managers),
+  *Add follow-up* and *Request exception* under each open invoice, collection
+  level and promise on follow-ups, and an Exceptions section.
+
 ## Where it lives
 
 | File | What it does |
@@ -61,7 +90,10 @@ System Managers and the finance roles see everyone.
 | `frontend/src/tbo/finance/StageStrip.vue`, `FinanceSection.vue`, `NumberField.vue` | Stage strip, section shell, numeric input. |
 | `frontend/src/tbo/finance/QuotationDialog.vue` | New / edit quotation dialog. |
 | `frontend/src/tbo/finance/BdeConversion.vue` | The BDE conversion report page. |
-| `frontend/src/tbo/finance/navigation.js` | `tboFinanceNavigationItems()` (sidebar) and `dealFinanceTab()` (Finance or Quotations). |
+| `frontend/src/tbo/finance/navigation.js` | `tboFinanceNavigationItems()` (sidebar: BDE conversion; Receivables and Finance exceptions in Phase 2) and `dealFinanceTab()` (Finance or Quotations). |
+| `frontend/src/tbo/finance/Receivables.vue` | The Receivables page. |
+| `frontend/src/tbo/finance/FinanceExceptions.vue` | The Finance exceptions page with the decision dialog. |
+| `frontend/src/tbo/finance/FollowUpDialog.vue`, `ExceptionDialog.vue` | Follow-up and exception request dialogs (Receivables page and Finance tab). |
 
 Small hooks into upstream files:
 
@@ -71,7 +103,7 @@ Small hooks into upstream files:
 | `frontend/src/components/Activities/Activities.vue` | `<DealFinance v-else-if="title == 'Finance'">` after `QuotationsList`. |
 | `frontend/src/components/Activities/ActivityHeader.vue` | No "New" menu on the Finance tab either. |
 | `frontend/src/components/Layouts/AppSidebar.vue` | `...tboFinanceNavigationItems()` in `links`. |
-| `frontend/src/router.js` | The `/bde-conversion` route, named `BDE Conversion`. |
+| `frontend/src/router.js` | The `/bde-conversion`, `/receivables` and `/finance-exceptions` routes (`BDE Conversion`, `Receivables`, `Finance Exceptions`). |
 | `crm/api/__init__.py` | `check_app_permission` also asks the `crm_app_permission` hooks. |
 | `crm/permissions/org_hierarchy.py` | `_unrestricted()` asks the `crm_unrestricted_access` hooks before applying the sales hierarchy. |
 
@@ -104,9 +136,8 @@ submitted or cancelled, or the stage changes), on the CRM's own
 `crm_quotation_update` event, and when the window regains focus. Reloads are
 debounced by 300 ms.
 
-## Not in Phase 1
+## Not built yet
 
-- Allocation (India share) and Exceptions sections: Phases 3 and 4. The tab has
-  a marked place for them.
-- Receivables, collections and reminders: Phase 2.
+- Allocation (India share) section and the Allocations & Transfers page: Phase 3.
+- Bank-reconciliation exceptions and line verification: Phase 4.
 - Finance dashboard cards: Phase 5.
