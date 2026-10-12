@@ -383,6 +383,7 @@ import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { canViewQuotations } from '@/composables/erpnext'
+import { dealFinanceTab } from '@/tbo/finance/navigation'
 import { callEnabled } from '@/composables/telephony'
 import { useCommandPaletteContext } from '@/composables/useCommandPalette'
 import { flattenCommandActions } from '@/utils/commandPalette'
@@ -790,12 +791,8 @@ const tabs = computed(() => {
       icon: WhatsAppIcon,
       condition: () => whatsappEnabled.value,
     },
-    {
-      name: 'Quotations',
-      label: __('Quotations'),
-      icon: FileTextIcon,
-      condition: () => canViewQuotations.value,
-    },
+    // TBO: Finance replaces Quotations while the finance workflow is on (docs/tbo-finance.md)
+    dealFinanceTab({ icon: FileTextIcon, canViewQuotations }),
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
 })

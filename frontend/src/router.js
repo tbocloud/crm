@@ -108,6 +108,12 @@ const routes = [
     name: 'Quotation Approvals',
     component: () => import('@/tbo/quotationApprovals/QuotationApprovals.vue'),
   },
+  // TBO: finance workflow report (docs/tbo-finance.md)
+  {
+    path: '/bde-conversion',
+    name: 'BDE Conversion',
+    component: () => import('@/tbo/finance/BdeConversion.vue'),
+  },
   {
     path: '/data-import',
     name: 'DataImportList',
