@@ -113,11 +113,11 @@
               >
                 <span
                   v-if="i < data.steps.length - 1"
-                  class="absolute left-[5px] top-4 h-full w-px bg-outline-gray-2"
+                  class="absolute left-[5px] top-4 h-full border-l border-outline-gray-2"
                   aria-hidden="true"
                 />
                 <span
-                  class="relative mt-1.5 size-[11px] shrink-0 rounded-full border-2 border-surface-elevation-1"
+                  class="relative mt-1.5 size-[11px] shrink-0 rounded-full ring-2 ring-[var(--surface-elevation-1)]"
                   :class="stepDot(step.action)"
                   aria-hidden="true"
                 />

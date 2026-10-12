@@ -115,6 +115,16 @@ const routes = [
     component: () => import('@/tbo/finance/BdeConversion.vue'),
   },
   {
+    path: '/receivables',
+    name: 'Receivables',
+    component: () => import('@/tbo/finance/Receivables.vue'),
+  },
+  {
+    path: '/finance-exceptions',
+    name: 'Finance Exceptions',
+    component: () => import('@/tbo/finance/FinanceExceptions.vue'),
+  },
+  {
     path: '/data-import',
     name: 'DataImportList',
     component: () => import('@/pages/DataImport.vue'),

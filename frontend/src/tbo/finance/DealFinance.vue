@@ -68,6 +68,24 @@
             <span class="text-ink-gray-8">{{ data.customer }}</span>
           </template>
         </p>
+        <div
+          v-if="data.receivables"
+          class="flex flex-wrap items-center gap-2 text-p-sm text-ink-gray-6"
+        >
+          <span>{{ __('Accounts owner') }}:</span>
+          <Link
+            v-if="data.can_set_accounts_owner"
+            class="w-56"
+            :value="data.accounts_owner"
+            doctype="User"
+            :placeholder="__('Not assigned')"
+            :aria-label="__('Accounts owner')"
+            @change="changeAccountsOwner"
+          />
+          <span v-else class="text-ink-gray-8">{{
+            data.accounts_owner || __('not assigned')
+          }}</span>
+        </div>
       </section>
 
       <!-- Totals per currency -->
@@ -79,7 +97,7 @@
         <dl
           v-for="total in data.totals"
           :key="total.currency"
-          class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-outline-gray-2 bg-outline-gray-2 sm:grid-cols-4"
+          class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-outline-gray-2 bg-[var(--outline-gray-2)] sm:grid-cols-4"
         >
           <div
             v-for="cell in totalCells(total)"
@@ -329,6 +347,23 @@
               </li>
             </ul>
           </details>
+          <div
+            v-if="data.receivables && row.outstanding_amount !== 0"
+            class="mt-2 flex flex-wrap gap-2"
+          >
+            <Button
+              size="sm"
+              :label="__('Add follow-up')"
+              :iconLeft="LucideCalendarClock"
+              @click="openInvoiceAction('followUp', row)"
+            />
+            <Button
+              size="sm"
+              :label="__('Request exception')"
+              :iconLeft="LucideShieldAlert"
+              @click="openInvoiceAction('exception', row)"
+            />
+          </div>
         </li>
       </FinanceSection>
 
@@ -390,6 +425,15 @@
           >
           <span class="text-p-sm text-ink-gray-6">{{ __(task.status) }}</span>
           <span
+            v-if="task.tbo_task_type === 'Collection'"
+            class="text-p-sm text-ink-gray-6"
+            >{{ __('Collection · level {0}', [task.tbo_escalation_level || 0])
+            }}<template v-if="task.tbo_promised_date">
+              ·
+              {{ __('promised {0}', [date(task.tbo_promised_date)]) }}</template
+            ></span
+          >
+          <span
             class="ml-auto inline-flex items-center gap-1 text-p-sm"
             :class="
               task.due_date && task.due_date.slice(0, 10) < today
@@ -410,9 +454,61 @@
           </span>
         </li>
       </FinanceSection>
-      <!-- Allocation (Phase 3) and Exceptions (Phase 4) join here, for accounts only. -->
+      <!-- Exceptions on the deal (Phase 2) -->
+      <FinanceSection
+        v-if="data.receivables"
+        :title="__('Exceptions')"
+        :count="data.exceptions.length"
+        :empty="__('No open exceptions.')"
+      >
+        <li
+          v-for="row in data.exceptions"
+          :key="row.name"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1 py-3"
+        >
+          <span class="font-mono text-base text-ink-gray-9">{{
+            row.name
+          }}</span>
+          <Badge
+            :label="__(row.status)"
+            :theme="exceptionTone(row.status)"
+            variant="subtle"
+            size="sm"
+          />
+          <span class="text-base text-ink-gray-8">{{
+            __(row.exception_type)
+          }}</span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              [
+                row.reference_name,
+                row.new_due_date &&
+                  __('new due date {0}', [date(row.new_due_date)]),
+                row.pause_until &&
+                  __('paused until {0}', [date(row.pause_until)]),
+              ]
+                .filter(Boolean)
+                .join(' · ')
+            }}
+          </span>
+        </li>
+      </FinanceSection>
+      <!-- Allocation (Phase 3) joins here, for accounts only. -->
     </div>
 
+    <FollowUpDialog
+      v-if="invoiceAction.row"
+      v-model="invoiceAction.followUp"
+      :invoice="invoiceAction.row.name"
+      @saved="reload"
+    />
+    <ExceptionDialog
+      v-if="invoiceAction.row"
+      v-model="invoiceAction.exception"
+      :invoice="invoiceAction.row.name"
+      :terms="invoiceAction.row.terms"
+      @saved="reload"
+    />
     <QuotationDialog
       v-model="showQuotation"
       :deal="deal"
@@ -432,7 +528,7 @@ import StateMessage from '@/tbo/quotationApprovals/StateMessage.vue'
 import QuotationAdjustments from '@/tbo/quotationApprovals/QuotationAdjustments.vue'
 import { useQuotationAdjustments } from '@/tbo/quotationApprovals/useQuotationAdjustments'
 import { Badge, createResource, toast } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import LucideCircle from '~icons/lucide/circle'
 import LucideCircleAlert from '~icons/lucide/circle-alert'
 import LucideCircleCheck from '~icons/lucide/circle-check'
@@ -441,7 +537,12 @@ import LucideLockOpen from '~icons/lucide/lock-open'
 import LucidePencil from '~icons/lucide/pencil'
 import LucidePlus from '~icons/lucide/plus'
 import LucideSend from '~icons/lucide/send'
+import Link from '@/components/Controls/Link.vue'
+import LucideCalendarClock from '~icons/lucide/calendar-clock'
+import LucideShieldAlert from '~icons/lucide/shield-alert'
+import ExceptionDialog from './ExceptionDialog.vue'
 import FinanceSection from './FinanceSection.vue'
+import FollowUpDialog from './FollowUpDialog.vue'
 import QuotationDialog from './QuotationDialog.vue'
 import StageStrip from './StageStrip.vue'
 import {
@@ -449,11 +550,13 @@ import {
   load,
   methods,
   setClosed,
+  setAccountsOwner,
   setOnboarding,
   submitQuotation,
   useDealFinanceRefresh,
 } from './api'
 import {
+  exceptionTone,
   isPermissionError,
   isTermOverdue,
   localToday,
@@ -500,6 +603,20 @@ function totalCells(total) {
     { label: __('Outstanding'), value: total.outstanding },
     { label: __('Overdue'), value: total.overdue, danger: total.overdue > 0 },
   ]
+}
+
+const invoiceAction = reactive({ row: null, followUp: false, exception: false })
+function openInvoiceAction(kind, row) {
+  invoiceAction.row = row
+  invoiceAction[kind] = true
+}
+
+function changeAccountsOwner(user) {
+  run(
+    'accounts-owner',
+    () => setAccountsOwner(props.deal, user),
+    __('Accounts owner updated'),
+  )
 }
 
 function openQuotation(name, url = '') {
