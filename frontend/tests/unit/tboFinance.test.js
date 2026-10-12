@@ -286,6 +286,24 @@ describe('receivables helpers', () => {
     expect(line.split(',').length).toBeGreaterThan(10)
   })
 
+  it('neutralises formula cells but keeps numbers', () => {
+    const csv = receivablesCsv([
+      {
+        invoice: 'SINV-2',
+        customer_name: '=HYPERLINK("x")',
+        company: '@corp',
+        currency: 'SAR',
+        outstanding: -5,
+        overdue: 0,
+        buckets: {},
+      },
+    ])
+    const line = csv.split('\n')[1]
+    expect(line).toContain(`"'=HYPERLINK(""x"")"`)
+    expect(line).toContain("'@corp")
+    expect(line).toContain(',-5,')
+  })
+
   it('gives each exception status a tone', () => {
     expect(exceptionTone('Pending Approval')).toBe('orange')
     expect(exceptionTone('Approved')).toBe('green')

@@ -225,9 +225,14 @@ export function receivablesCsv(rows) {
     'Promised date',
     'Promised amount',
   ]
+  // quote separators and line breaks; neutralise text that a spreadsheet would
+  // run as a formula (=, +, -, @, tab, CR at the start). Numbers stay numbers.
   const cell = (value) => {
-    const text = value === null || value === undefined ? '' : String(value)
-    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+    if (value === null || value === undefined) return ''
+    if (typeof value === 'number') return String(value)
+    let text = String(value)
+    if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`
+    return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
   }
   const lines = rows.map((row) =>
     [

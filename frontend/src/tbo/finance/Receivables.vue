@@ -520,6 +520,7 @@ function exportCsv() {
   link.href = url
   link.download = `receivables-${localToday()}.csv`
   link.click()
-  URL.revokeObjectURL(url)
+  // some browsers start the download asynchronously
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 </script>
