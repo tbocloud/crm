@@ -18,6 +18,7 @@ they run as evaluated strings in the browser.
 | Form scripting user guide | [feats/form-scripting/guide.md](./.pi/feats/form-scripting/guide.md) |
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Colours, fonts, TBO theme (and re-applying it after an upstream merge) | [docs/tbo-theme.md](./docs/tbo-theme.md) |
+| Quotation discount/commission approvals (TBO, tbo_smart APIs) | [docs/tbo-quotation-approvals.md](./docs/tbo-quotation-approvals.md) |
 
 ---
 
