@@ -49,10 +49,23 @@ Two one-line fixes for upstream layout bugs (worth sending upstream):
 
 ## Logo, favicon and name
 
-The default brand is TBO's mark and "TBO CRM". **Brand Settings
-(FCRM Settings: brand name, logo, favicon) still override all of it**: the
-sidebar shows the uploaded logo and name, and record pages set the uploaded
-favicon through frappe-ui's `usePageMeta`.
+The default brand is TBO's mark and "TBO CRM". **Brand Settings**
+(FCRM Settings: brand name, logo, favicon) still override the CRM's runtime
+surfaces:
+
+- the sidebar and Preferences show the uploaded logo and name;
+- the record pages and list views set the uploaded favicon through
+  frappe-ui's `usePageMeta`.
+
+Brand Settings never reached the static surfaces, upstream or here. Those
+stay TBO's whatever is uploaded:
+
+- the PWA manifest (name, icons), the apple-touch-icon, the iOS splash
+  screens, the HTML `<title>` before the app loads and the default favicon
+  (all fixed at build time by `tbo-brand.vite.js`);
+- the /apps screen and desk switcher title and logo (`crm/hooks.py`);
+- the onboarding/help panel and About dialog logo (they always used the stock
+  logo component).
 
 **The mark is a redraw.** `crm/public/tbo/tbo-mark.svg` was vectorised from the
 191×80 PNG on teambackoffice.com, not taken from official artwork. When TBO's
