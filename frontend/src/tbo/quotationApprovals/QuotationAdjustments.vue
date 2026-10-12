@@ -18,7 +18,7 @@
         <span class="font-mono tabular-nums">{{ row.limit_label }}</span>
       </span>
       <Button
-        v-if="row.latest && !row.latest.within_limit"
+        v-if="row.latest?.name && !row.latest.within_limit"
         variant="ghost"
         size="sm"
         :label="__('Trail')"

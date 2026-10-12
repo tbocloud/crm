@@ -51,6 +51,11 @@ export function load(resource, params) {
   return promise?.catch?.(() => {})
 }
 
+// Re-read my level and open requests, which decide whether Approvals shows.
+export function refreshAccess() {
+  if (accessResource) load(accessResource)
+}
+
 export function requestAdjustment(args) {
   return call(methods.request, args)
 }
@@ -69,7 +74,10 @@ export function errorMessage(error) {
 // desk user) and when the window regains focus.
 export function useAdjustmentRefresh(reload) {
   const { $socket } = globalStore()
-  const debounced = useDebounceFn(reload, 300)
+  const debounced = useDebounceFn(() => {
+    refreshAccess()
+    reload()
+  }, 300)
   function onListUpdate(data) {
     if (data?.doctype === ADJUSTMENT_DOCTYPE) debounced()
   }

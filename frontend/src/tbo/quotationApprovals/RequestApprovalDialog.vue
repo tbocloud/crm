@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { errorMessage, requestAdjustment } from './api'
+import { errorMessage, refreshAccess, requestAdjustment } from './api'
 import { Dialog, FormControl, toast } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 
@@ -111,6 +111,8 @@ watch(
   open,
   (isOpen) => {
     if (isOpen) {
+      // Cancel closes through v-model, which skips the Dialog's close event
+      reset()
       kind.value = props.kinds[0]?.kind || 'Discount'
       percent.value = props.kinds[0]?.percent || ''
     }
@@ -148,6 +150,7 @@ async function submit() {
     toast.success(__('Sent to {0} for approval', [request.current_level]))
     open.value = false
     reset()
+    refreshAccess()
     emit('requested', request)
   } catch (e) {
     error.value = errorMessage(e) || __('Could not send the request.')

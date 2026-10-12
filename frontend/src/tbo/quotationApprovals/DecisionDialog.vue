@@ -148,6 +148,8 @@ watch(
   open,
   (isOpen) => {
     if (!isOpen) return
+    // Cancel closes through v-model, which skips the Dialog's close event
+    reset()
     percent.value =
       props.action === 'override'
         ? props.request?.requested_percent

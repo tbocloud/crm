@@ -59,14 +59,9 @@ export function adjustmentChip(kindStatus) {
 // Whether the session user may ask for approval of this kind: a draft above
 // their limit, not yet covered, with nothing already waiting.
 export function canRequest(kindStatus, docstatus, access) {
-  return Boolean(
-    access?.level &&
-    docstatus === 0 &&
-    kindStatus.percent > 0 &&
-    !kindStatus.within_limit &&
-    !kindStatus.approved &&
-    !isOpen(liveLatest(kindStatus)),
-  )
+  if (!access?.level || docstatus !== 0) return false
+  if (kindStatus.percent <= 0 || kindStatus.within_limit) return false
+  return !kindStatus.approved && !isOpen(liveLatest(kindStatus))
 }
 
 // Where a request stands, for the approvals list.

@@ -16,7 +16,8 @@ permission on the server. The UI only hides what a user can't do.
   has an icon as well as its colour.
 - "Your limit: 5%" beside each chip. The limit is the viewer's own, so
   *Within limit* means "within your limit".
-- **Trail** opens a side panel with the request's append-only steps
+- **Trail** (when you may read the request; tbo_smart shares only the state
+  of another BDE's request) opens a side panel with the request's append-only steps
   (requested, forwarded, approved, ...), who did each and their remarks.
 - **Request approval** appears on draft quotations that are above your limit,
   not yet covered, and have nothing already waiting. It opens a dialog with the
@@ -93,6 +94,9 @@ on. Nothing errors in the user's face.
   `TBO Quotation Adjustment` (Frappe broadcasts it to desk users on every
   save, so a decision made elsewhere shows up), and when the window regains
   focus. Reloads are debounced by 300 ms.
+- The same events, and a successful request, also re-read the user's access
+  (level and open requests), so the sidebar entry appears without a page
+  reload.
 
 ## Not in this change
 
