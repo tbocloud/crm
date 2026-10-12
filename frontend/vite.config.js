@@ -14,6 +14,8 @@ export default defineConfig(async ({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         workbox: {
+          // workbox's default plus woff2, so the self-hosted fonts work offline
+          globPatterns: ['**/*.{js,css,html,woff2}'],
           maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         },
         devOptions: {

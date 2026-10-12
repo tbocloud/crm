@@ -17,12 +17,13 @@ frappe/crm rarely touch it:
 | `frontend/src/fonts/Geist/` | Self-hosted Geist and Geist Mono variable fonts (SIL OFL, licence alongside), so the PWA keeps its type offline and no request goes to a third-party font CDN. |
 | `frontend/tbo-theme.preset.js` | Tailwind preset that adds the `brand`, `highlight`, `success`, `warning`, `danger` and `info` colours (each with `-soft` where it applies), and sets `font-sans`/`font-mono` to Geist. |
 
-Two small hooks wire those files into upstream files:
+Three small hooks wire those files into upstream files:
 
 | Upstream file | Hook |
 | --- | --- |
 | `frontend/src/index.css` | `@import './tbo-theme.css';` after the frappe-ui imports |
 | `frontend/tailwind.config.js` | `import tboThemePreset from './tbo-theme.preset.js'` and `presets: [frappeUIPreset, tboThemePreset]` |
+| `frontend/vite.config.js` | `workbox.globPatterns` adds `woff2`, so the PWA precaches the fonts |
 
 Three one-line class swaps replace hard-coded blue accents:
 
