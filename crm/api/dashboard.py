@@ -17,8 +17,11 @@ def dashboard_user_only(fn):
 
 	@functools.wraps(fn)
 	def wrapper(*args, **kwargs):
-		admitted = any(frappe.get_attr(method)() for method in frappe.get_hooks("crm_app_permission"))
-		if not (is_sales_user() or admitted):
+		# sales users first, so a failing hook never locks them out
+		admitted = is_sales_user() or any(
+			frappe.get_attr(method)() for method in frappe.get_hooks("crm_app_permission")
+		)
+		if not admitted:
 			frappe.throw(
 				msg=_("You are not permitted to access this resource."),
 				title=_("Not Allowed"),
@@ -52,14 +55,16 @@ def get_provider_items(from_date, to_date, user) -> list:
 
 def place_provider_items(layout: list, items: list) -> list:
 	bottom = max((l["layout"]["y"] + l["layout"]["h"] for l in layout if l.get("layout")), default=0)
-	x = 0
+	x = row_height = 0
 	for item in items:
 		width, height = item.get("w", 4), item.get("h", 3)
 		if x + width > 20:
-			x, bottom = 0, bottom + height
+			# wrap below the tallest card of the row just finished
+			x, bottom, row_height = 0, bottom + row_height, 0
 		item["provider"] = True
 		item["layout"] = {"x": x, "y": bottom, "w": width, "h": height, "i": item["name"]}
 		x += width
+		row_height = max(row_height, height)
 	return items
 
 

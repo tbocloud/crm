@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import frappe
 
-from crm.api.dashboard import get_chart, get_dashboard
+from crm.api.dashboard import get_chart, get_dashboard, place_provider_items
 from crm.tests import CRMTestCase
 
 HOOKS = {
@@ -59,3 +59,9 @@ class TestDashboardProviders(CRMTestCase):
 			again = get_dashboard()
 		self.assertEqual(len([item for item in again if item["name"] == "provider_test_card"]), 1)
 		frappe.db.rollback()
+
+	def test_wrapped_cards_go_below_the_tallest_of_the_row(self):
+		items = place_provider_items(
+			[], [{"name": "tall", "w": 16, "h": 6}, {"name": "wide", "w": 5, "h": 2}]
+		)
+		self.assertEqual([item["layout"]["y"] for item in items], [0, 6])
