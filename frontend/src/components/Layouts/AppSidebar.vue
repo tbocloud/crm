@@ -7,13 +7,27 @@
        transparent in dark mode, and nothing behind it sets a background, so the
        column falls through to the white page canvas. The token cannot be
        overridden on the Sidebar element itself — `bg-surface-sidebar` is emitted
-       after `bg-surface-gray-1` in the utilities layer and would win. -->
-  <div class="relative flex h-full bg-surface-gray-1">
+       after `bg-surface-gray-1` in the utilities layer and would win.
+
+       TBO: on desktop it auto-hides (docs/tbo-sidebar.md). This wrapper keeps
+       the rail's width while the Sidebar opens over the page, which paints its
+       own surface with `!bg-surface-gray-1`. -->
+  <div
+    ref="shell"
+    class="relative flex h-full shrink-0 bg-surface-gray-1"
+    :class="autoHide && 'w-12'"
+    v-bind="shellListeners"
+  >
     <Sidebar
-      v-model:collapsed="isSidebarCollapsed"
+      :collapsed="isCollapsed"
       :disable-collapse="mobile"
       :width="mobile ? '260px' : undefined"
       class="border-r border-outline-gray-1"
+      :class="[
+        !mobile && 'motion-safe:!duration-200',
+        autoHide && 'absolute inset-y-0 left-0 z-20 !bg-surface-gray-1',
+        autoHide && !isCollapsed && 'shadow-xl !border-outline-gray-2',
+      ]"
     >
       <div class="flex h-full flex-col p-2">
         <UserDropdown :isCollapsed="isCollapsed" />
@@ -135,20 +149,20 @@
             </template>
           </SidebarItem>
           <SidebarItem
-            :label="isCollapsed ? __('Expand') : __('Collapse')"
-            @click="isSidebarCollapsed = !isSidebarCollapsed"
+            :label="
+              isPinned ? __('Auto-hide sidebar') : __('Keep sidebar open')
+            "
+            @click="togglePinned"
           >
             <template #prefix>
-              <CollapseSidebar
-                class="size-4 text-ink-gray-7 duration-300 ease-in-out"
-                :class="{ '[transform:rotateY(180deg)]': isCollapsed }"
-              />
+              <LucidePinOff v-if="isPinned" class="size-4 text-ink-gray-7" />
+              <LucidePin v-else class="size-4 text-ink-gray-7" />
             </template>
           </SidebarItem>
         </div>
       </div>
     </Sidebar>
-    <Notifications v-if="!mobile" />
+    <Notifications v-if="!mobile" :style="notificationsStyle" />
   </div>
 
   <template v-if="!mobile">
@@ -174,6 +188,9 @@
 
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
+import LucidePin from '~icons/lucide/pin'
+import LucidePinOff from '~icons/lucide/pin-off'
+import { useAutoHideSidebar } from '@/tbo/sidebar/useAutoHideSidebar'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
@@ -196,7 +213,6 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
-import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import HelpIcon from '@/components/Icons/HelpIcon.vue'
 import Notifications from '@/components/Notifications.vue'
@@ -205,6 +221,7 @@ import { viewsStore } from '@/stores/views'
 import {
   unreadNotificationsCount,
   notificationsStore,
+  visible as notificationsVisible,
 } from '@/stores/notifications'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
@@ -229,7 +246,6 @@ import {
 } from 'frappe-ui/frappe'
 import router from '@/router'
 import { getSettings } from '@/stores/settings'
-import { useStorage } from '@vueuse/core'
 import { useDemoData } from '@/composables/demoData'
 import { ref, reactive, computed, markRaw, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -247,11 +263,21 @@ const { capture } = useTelemetry()
 const { clearDemoData, isDemoDataCreated } = useDemoData()
 const { send } = useBroadcast()
 
-const isSidebarCollapsed = useStorage('isSidebarCollapsed', false)
-
-// The mobile drawer pins the sidebar open, so it is never visually collapsed
-// even when the stored rail state says otherwise.
-const isCollapsed = computed(() => isSidebarCollapsed.value && !props.mobile)
+// TBO: the mobile drawer is always open; on desktop the sidebar rests as the
+// icon rail unless pinned (docs/tbo-sidebar.md).
+const {
+  shell,
+  isPinned,
+  isCollapsed,
+  autoHide,
+  togglePinned,
+  notificationsStyle,
+  shellListeners,
+} = useAutoHideSidebar({
+  mobile: () => props.mobile,
+  held: notificationsVisible,
+  user: sessionStore().user,
+})
 
 const isFCSite = ref(window.is_fc_site)
 const isDemoSite = ref(window.is_demo_site)
