@@ -131,3 +131,12 @@ export const createTransfer = (args) =>
 
 export const confirmReceipt = (transfer, india_payment_entry) =>
   call(allocationMethods.confirmReceipt, { transfer, india_payment_entry })
+
+// Phase 4: bank-line verification
+export const reconciliationMethods = {
+  queue: `${API}.reconciliation.get_bank_queue`,
+  verify: `${API}.reconciliation.verify_bank_line`,
+}
+
+export const verifyBankLine = (name) =>
+  call(reconciliationMethods.verify, { name })

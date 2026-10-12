@@ -24,7 +24,11 @@ export function tboFinanceNavigationItems() {
       route: 'Receivables',
     })
   }
-  if (access.value?.receivables) {
+  if (
+    access.value?.receivables ||
+    access.value?.allocations ||
+    access.value?.reconciliation
+  ) {
     items.push({
       label: 'Finance exceptions',
       icon: LucideShieldAlert,
