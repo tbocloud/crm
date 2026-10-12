@@ -195,14 +195,6 @@ kbd {
   box-shadow: inset 0 0 0 1px var(--brand);
 }
 
-/* The stock CRM logo (used when no brand logo is set) takes the brand colour. */
-svg path[fill='#EF0BF5' i] {
-  fill: var(--brand);
-}
-svg:has(path[fill='#EF0BF5' i]) path[fill='white'] {
-  fill: var(--on-brand);
-}
-
 /*
  * Sidebar: the current page is a white card with a hairline, its icon in
  * brand. Everything else stays neutral.

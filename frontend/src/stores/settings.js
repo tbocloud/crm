@@ -1,8 +1,9 @@
 import { createDocumentResource } from 'frappe-ui'
 import { reactive, ref } from 'vue'
+import { TBO_BRAND_NAME } from '@/tbo/brand/brand.js'
 
 const settings = ref({})
-const brand = reactive({})
+const brand = reactive({ name: TBO_BRAND_NAME })
 
 const _settings = createDocumentResource({
   doctype: 'FCRM Settings',
@@ -16,7 +17,7 @@ const _settings = createDocumentResource({
 
 export function getSettings() {
   function setupBrand() {
-    brand.name = settings.value?.brand_name
+    brand.name = settings.value?.brand_name || TBO_BRAND_NAME
     brand.logo = settings.value?.brand_logo
     brand.favicon = settings.value?.favicon
   }
