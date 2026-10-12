@@ -465,7 +465,8 @@ const props = defineProps({
 })
 
 const { $dialog } = globalStore()
-const today = localToday()
+// refreshed on every reload, so a tab left open past midnight flags new overdue items
+const today = ref(localToday())
 const busy = ref('')
 const showQuotation = ref(false)
 const editing = ref({ name: '', url: '' })
@@ -473,6 +474,7 @@ const editing = ref({ name: '', url: '' })
 const finance = createResource({ url: methods.deal })
 const data = computed(() => finance.data || null)
 function reload() {
+  today.value = localToday()
   load(finance, { deal: props.deal })
 }
 reload()
