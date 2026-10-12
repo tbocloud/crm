@@ -1,10 +1,14 @@
 <template>
   <div class="flex h-screen w-screen">
     <AppSidebar />
-    <div class="flex-1 flex flex-col h-full overflow-auto bg-surface-base">
+    <!-- TBO: Escape in the auto-hide sidebar hands keyboard focus here. -->
+    <main
+      tabindex="-1"
+      class="flex-1 flex flex-col h-full overflow-auto bg-surface-base focus:outline-none"
+    >
       <AppHeader />
       <slot />
-    </div>
+    </main>
     <GlobalModals />
   </div>
 </template>
