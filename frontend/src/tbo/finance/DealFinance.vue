@@ -43,6 +43,7 @@
               "
               :aria-pressed="Boolean(data.onboarding_complete)"
               :loading="busy === 'onboarding'"
+              :disabled="Boolean(busy)"
               @click="toggleOnboarding"
             />
             <Button
@@ -52,6 +53,7 @@
               :label="data.closed ? __('Reopen') : __('Close finance')"
               :iconLeft="data.closed ? LucideLockOpen : LucideLock"
               :loading="busy === 'close'"
+              :disabled="Boolean(busy)"
               @click="toggleClosed"
             />
           </div>
@@ -172,6 +174,7 @@
               :label="__('Submit')"
               :iconLeft="LucideSend"
               :loading="busy === row.name"
+              :disabled="Boolean(busy)"
               @click="confirmSubmit(row)"
             />
           </div>
@@ -450,14 +453,19 @@ import {
   submitQuotation,
   useDealFinanceRefresh,
 } from './api'
-import { isPermissionError, isTermOverdue, statusTone } from './finance'
+import {
+  isPermissionError,
+  isTermOverdue,
+  localToday,
+  statusTone,
+} from './finance'
 
 const props = defineProps({
   deal: { type: String, required: true },
 })
 
 const { $dialog } = globalStore()
-const today = new Date().toISOString().slice(0, 10)
+const today = localToday()
 const busy = ref('')
 const showQuotation = ref(false)
 const editing = ref({ name: '', url: '' })
@@ -498,6 +506,8 @@ function openQuotation(name, url = '') {
 }
 
 async function run(key, action, success) {
+  // one finance action at a time: each one changes what the next would act on
+  if (busy.value) return
   busy.value = key
   try {
     await action()

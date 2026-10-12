@@ -254,6 +254,7 @@ import NumberField from './NumberField.vue'
 import { errorMessage, getItemPrice, load, methods, saveQuotation } from './api'
 import {
   lineAmounts,
+  localToday,
   quotationNetTotal,
   quotationPayload,
   validateQuotation,
@@ -341,21 +342,24 @@ function addItem() {
 }
 
 async function pickItem(row, code) {
+  // a new item never keeps the previous item's name or price
   row.item_code = code
+  row.item_name = ''
+  row.price_list_rate = 0
+  if (!code) return
   try {
     const item = await getItemPrice(code, values.value.company)
+    // ignore a late answer for an item the row no longer has
+    if (row.item_code !== code) return
     row.item_name = item.item_name
-    if (!Number(row.price_list_rate)) row.price_list_rate = item.price_list_rate
+    row.price_list_rate = item.price_list_rate
   } catch (e) {
-    error.value = errorMessage(e)
+    if (row.item_code === code) error.value = errorMessage(e)
   }
 }
 
 async function save() {
-  errors.value = validateQuotation(
-    values.value,
-    new Date().toISOString().slice(0, 10),
-  )
+  errors.value = validateQuotation(values.value, localToday())
   if (Object.keys(errors.value).length) return
   saving.value = true
   error.value = ''

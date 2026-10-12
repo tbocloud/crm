@@ -25,6 +25,8 @@ export const methods = {
 }
 
 let accessResource
+let lastAccessAttempt = 0
+const ACCESS_RETRY_MS = 30000
 
 // Whether the finance workflow is on, and what the session user may do. One
 // shared resource for the deal tab, the sidebar and the report.
@@ -34,6 +36,16 @@ export function useFinanceAccess() {
       url: methods.access,
       cache: 'tbo-finance-access',
     })
+    lastAccessAttempt = Date.now()
+    load(accessResource)
+  } else if (
+    accessResource.error &&
+    !accessResource.loading &&
+    Date.now() - lastAccessAttempt > ACCESS_RETRY_MS
+  ) {
+    // a failed check (network, deploy in progress) is retried by the next screen
+    // that asks, at most every 30 s (tbo_smart missing fails every time)
+    lastAccessAttempt = Date.now()
     load(accessResource)
   }
   const access = computed(() =>

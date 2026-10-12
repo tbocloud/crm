@@ -310,6 +310,7 @@ function sortBy(key) {
 
 function cell(row, column) {
   const value = row[column.key]
+  if (value === null || value === undefined) return '—'
   if (column.money) return formatCurrency(value, '', report.data?.currency)
   if (column.percent) return `${value}%`
   return value

@@ -11,6 +11,13 @@ export function stageSteps(stages, current) {
   }))
 }
 
+// Today's date as YYYY-MM-DD in the browser's own time zone (toISOString would
+// give the UTC date, a day off around midnight in KSA).
+export function localToday(now = new Date()) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
 const round2 = (value) => Math.round((Number(value) || 0) * 100) / 100
 
 // One dialog line: the rate after its discount and the line amount.

@@ -2,6 +2,7 @@ import {
   isPermissionError,
   isTermOverdue,
   lineAmounts,
+  localToday,
   quotationNetTotal,
   quotationPayload,
   sortRows,
@@ -191,5 +192,12 @@ describe('helpers', () => {
       'B',
       'C',
     ])
+  })
+})
+
+describe('localToday', () => {
+  it('uses the local calendar date', () => {
+    expect(localToday(new Date(2026, 9, 12, 0, 30))).toBe('2026-10-12')
+    expect(localToday(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05')
   })
 })
