@@ -306,8 +306,8 @@ const { access, loading: accessLoading } = useFinanceAccess()
 const receivablesOn = computed(() =>
   Boolean(
     access.value?.receivables ||
-    access.value?.allocations ||
-    access.value?.reconciliation,
+      access.value?.allocations ||
+      access.value?.reconciliation,
   ),
 )
 const formId = `tbo-decision-${Math.random().toString(36).slice(2, 8)}`
