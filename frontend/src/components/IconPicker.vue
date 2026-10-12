@@ -52,7 +52,7 @@
               <button
                 v-for="_emoji in emojis"
                 :key="_emoji.description"
-                class="h-8 w-8 rounded-md p-1 text-3xl hover:bg-surface-gray-2 focus:outline-none focus:ring focus:ring-blue-200"
+                class="h-8 w-8 rounded-md p-1 text-3xl hover:bg-surface-gray-2"
                 :title="_emoji.description"
                 @click="() => (emoji = _emoji.emoji) && togglePopover()"
               >
