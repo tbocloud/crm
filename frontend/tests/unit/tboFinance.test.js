@@ -1,4 +1,6 @@
 import {
+  suggestTransferRows,
+  transferTone,
   exceptionTone,
   receivablesCsv,
   validateExceptionRequest,
@@ -308,5 +310,29 @@ describe('receivables helpers', () => {
     expect(exceptionTone('Pending Approval')).toBe('orange')
     expect(exceptionTone('Approved')).toBe('green')
     expect(exceptionTone('Unknown')).toBe('gray')
+  })
+})
+
+describe('transfers', () => {
+  it('suggests FIFO rows, netting reversals first', () => {
+    const allocations = [
+      { name: 'A1', outstanding_amount: 15000 },
+      { name: 'A2', outstanding_amount: 17500 },
+      { name: 'R1', outstanding_amount: -500 },
+    ]
+    expect(suggestTransferRows(allocations, 20000)).toEqual([
+      { fund_allocation: 'R1', allocated_amount: -500 },
+      { fund_allocation: 'A1', allocated_amount: 15000 },
+      { fund_allocation: 'A2', allocated_amount: 5500 },
+    ])
+    expect(suggestTransferRows(allocations, 0)).toEqual([
+      { fund_allocation: 'R1', allocated_amount: -500 },
+      { fund_allocation: 'A1', allocated_amount: 500 },
+    ])
+  })
+
+  it('gives transfer statuses a tone', () => {
+    expect(transferTone('Difference')).toBe('orange')
+    expect(transferTone('Received')).toBe('green')
   })
 })

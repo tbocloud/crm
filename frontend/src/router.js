@@ -125,6 +125,11 @@ const routes = [
     component: () => import('@/tbo/finance/FinanceExceptions.vue'),
   },
   {
+    path: '/allocations',
+    name: 'Allocations',
+    component: () => import('@/tbo/finance/Allocations.vue'),
+  },
+  {
     path: '/data-import',
     name: 'DataImportList',
     component: () => import('@/pages/DataImport.vue'),

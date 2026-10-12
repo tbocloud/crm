@@ -113,3 +113,21 @@ export function useDealFinanceRefresh(deal, reload) {
   useEventListener(window, 'focus', () => debounced())
   return debounced
 }
+
+// Phase 3: allocation and transfers (accounts, finance and management only)
+export const allocationMethods = {
+  summary: `${API}.allocations.get_allocation_summary`,
+  transferForm: `${API}.allocations.get_transfer_form`,
+  createTransfer: `${API}.allocations.create_transfer`,
+  confirmReceipt: `${API}.allocations.confirm_receipt`,
+  preview: `${API}.allocations.preview_allocations`,
+}
+
+export const createTransfer = (args) =>
+  call(allocationMethods.createTransfer, {
+    ...args,
+    rows: JSON.stringify(args.rows),
+  })
+
+export const confirmReceipt = (transfer, india_payment_entry) =>
+  call(allocationMethods.confirmReceipt, { transfer, india_payment_entry })

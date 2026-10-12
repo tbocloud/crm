@@ -493,7 +493,28 @@
           </span>
         </li>
       </FinanceSection>
-      <!-- Allocation (Phase 3) joins here, for accounts only. -->
+      <!-- India's share on this deal (Phase 3): accounts, finance and management only -->
+      <section
+        v-if="data.allocation"
+        :aria-label="__('Allocation')"
+        class="flex flex-col gap-2"
+      >
+        <h2
+          class="border-b border-outline-gray-2 pb-2 text-base font-semibold text-ink-gray-9"
+        >
+          {{ __('Allocation') }}
+        </h2>
+        <dl class="grid grid-cols-3 gap-3">
+          <div v-for="cell in allocationCells" :key="cell.label">
+            <dt class="text-p-sm text-ink-gray-6">{{ cell.label }}</dt>
+            <dd
+              class="whitespace-nowrap font-mono tabular-nums text-ink-gray-9"
+            >
+              {{ money(cell.value, data.allocation.currency) }}
+            </dd>
+          </div>
+        </dl>
+      </section>
     </div>
 
     <FollowUpDialog
@@ -595,6 +616,12 @@ function money(value, currency) {
 function date(value) {
   return value ? formatDate(value, '', true) : '—'
 }
+
+const allocationCells = computed(() => [
+  { label: __('Partner share'), value: data.value?.allocation?.share },
+  { label: __('Settled'), value: data.value?.allocation?.settled },
+  { label: __('Pending'), value: data.value?.allocation?.pending },
+])
 
 function totalCells(total) {
   return [

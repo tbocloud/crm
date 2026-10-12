@@ -268,3 +268,44 @@ export function exceptionTone(status) {
     }[status] || 'gray'
   )
 }
+
+// Settle open allocations oldest first up to `amount` (the New transfer
+// dialog's suggestion). Negative allocations (a reversal, due back from the
+// partner) are always netted in full first.
+export function suggestTransferRows(allocations, amount) {
+  let left = Number(amount) || 0
+  const rows = []
+  for (const allocation of allocations) {
+    const outstanding = Number(allocation.outstanding_amount) || 0
+    if (outstanding < 0) {
+      rows.push({
+        fund_allocation: allocation.name,
+        allocated_amount: outstanding,
+      })
+      left -= outstanding
+    }
+  }
+  for (const allocation of allocations) {
+    const outstanding = Number(allocation.outstanding_amount) || 0
+    if (outstanding <= 0 || left <= 0) continue
+    const take = Math.round(Math.min(outstanding, left) * 100) / 100
+    rows.push({ fund_allocation: allocation.name, allocated_amount: take })
+    left = Math.round((left - take) * 100) / 100
+  }
+  return rows
+}
+
+// Transfer status → badge tone.
+export function transferTone(status) {
+  return (
+    {
+      Draft: 'gray',
+      Sent: 'blue',
+      Received: 'green',
+      Matched: 'green',
+      Closed: 'gray',
+      Difference: 'orange',
+      Cancelled: 'red',
+    }[status] || 'gray'
+  )
+}

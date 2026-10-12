@@ -80,6 +80,31 @@ Behind **TBO Smart Settings → Receivables and reminders (Phase 2)** as well.
   *Add follow-up* and *Request exception* under each open invoice, collection
   level and promise on follow-ups, and an Exceptions section.
 
+## What users see (Phase 3)
+
+Behind **TBO Smart Settings → Allocation and transfers (Phase 3)**, and only for
+accounts, finance and management (tbo_smart refuses everyone else).
+
+- **Allocations** (`/crm/allocations`, sidebar). Totals: payable to the
+  partner, settled, pending transfer and due from the partner. Three tabs:
+  - *Allocations*: one row per receipt, with gross, net, share and outstanding,
+    plus status and reversal badges.
+  - *Transfers*: status, sent, settled, difference, and the achieved rate once
+    India has received it. A transfer that is still waiting has a **Confirm
+    receipt** action, which links India's Payment Entry.
+  - *Before start date*: a preview of what earlier receipts would have
+    allocated. It records nothing.
+- **New transfer** dialog. Pick the sending Payment Entry (booked in ERPNext),
+  the date, a reference and any withholding tax. The open allocations are listed
+  oldest first, with amounts suggested from what was sent. Reversals are netted
+  first, and every amount can be edited. Sent, settles and difference are shown
+  live; a difference above the tolerance becomes an exception for the Finance
+  Manager.
+- **Deal → Finance tab** shows an Allocation section (partner share, settled,
+  pending) to those roles only.
+- Nothing here posts to the accounts. The page says so (memo only, open
+  question Q1).
+
 ## Where it lives
 
 | File | What it does |
@@ -94,6 +119,7 @@ Behind **TBO Smart Settings → Receivables and reminders (Phase 2)** as well.
 | `frontend/src/tbo/finance/Receivables.vue` | The Receivables page. |
 | `frontend/src/tbo/finance/FinanceExceptions.vue` | The Finance exceptions page with the decision dialog. |
 | `frontend/src/tbo/finance/FollowUpDialog.vue`, `ExceptionDialog.vue` | Follow-up and exception request dialogs (Receivables page and Finance tab). |
+| `frontend/src/tbo/finance/Allocations.vue`, `TransferDialog.vue` | Allocations & transfers page and the New transfer dialog (Phase 3). |
 
 Small hooks into upstream files:
 
@@ -103,7 +129,7 @@ Small hooks into upstream files:
 | `frontend/src/components/Activities/Activities.vue` | `<DealFinance v-else-if="title == 'Finance'">` after `QuotationsList`. |
 | `frontend/src/components/Activities/ActivityHeader.vue` | No "New" menu on the Finance tab either. |
 | `frontend/src/components/Layouts/AppSidebar.vue` | `...tboFinanceNavigationItems()` in `links`. |
-| `frontend/src/router.js` | The `/bde-conversion`, `/receivables` and `/finance-exceptions` routes (`BDE Conversion`, `Receivables`, `Finance Exceptions`). |
+| `frontend/src/router.js` | The `/bde-conversion`, `/receivables`, `/finance-exceptions` and `/allocations` routes (`BDE Conversion`, `Receivables`, `Finance Exceptions`, `Allocations`). |
 | `crm/api/__init__.py` | `check_app_permission` also asks the `crm_app_permission` hooks. |
 | `crm/permissions/org_hierarchy.py` | `_unrestricted()` asks the `crm_unrestricted_access` hooks before applying the sales hierarchy. |
 
@@ -138,6 +164,5 @@ debounced by 300 ms.
 
 ## Not built yet
 
-- Allocation (India share) section and the Allocations & Transfers page: Phase 3.
 - Bank-reconciliation exceptions and line verification: Phase 4.
 - Finance dashboard cards: Phase 5.
