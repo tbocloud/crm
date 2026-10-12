@@ -7,21 +7,20 @@ from frappe.query_builder import Case, DocType
 from frappe.query_builder.functions import Avg, Coalesce, Count, Date, DateFormat, IfNull, Sum
 from pypika.functions import Function
 
+from crm.api import check_app_permission
 from crm.fcrm.doctype.crm_dashboard.crm_dashboard import create_default_manager_dashboard
 from crm.utils import is_sales_user
 
 
 def dashboard_user_only(fn):
-	"""Sales users, plus users another app admits to the CRM (`crm_app_permission` hooks), e.g.
-	tbo_smart's finance roles. TBO: docs/tbo-finance.md."""
+	"""Sales users, plus users the CRM's app gate admits (FCRM module, then the
+	`crm_app_permission` hooks, e.g. tbo_smart's finance roles). TBO: docs/tbo-finance.md."""
 
 	@functools.wraps(fn)
 	def wrapper(*args, **kwargs):
-		# sales users first, so a failing hook never locks them out
-		admitted = is_sales_user() or any(
-			frappe.get_attr(method)() for method in frappe.get_hooks("crm_app_permission")
-		)
-		if not admitted:
+		# sales users first, so a failing hook never locks them out; anyone else passes the
+		# CRM's app gate (FCRM module, then the `crm_app_permission` hooks)
+		if not (is_sales_user() or check_app_permission()):
 			frappe.throw(
 				msg=_("You are not permitted to access this resource."),
 				title=_("Not Allowed"),

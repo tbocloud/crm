@@ -65,3 +65,10 @@ class TestDashboardProviders(CRMTestCase):
 			[], [{"name": "tall", "w": 16, "h": 6}, {"name": "wide", "w": 5, "h": 2}]
 		)
 		self.assertEqual([item["layout"]["y"] for item in items], [0, 6])
+
+	def test_other_users_need_the_app_gate(self):
+		frappe.set_user("Guest")
+		self.addCleanup(frappe.set_user, "Administrator")
+		with patch("crm.api.dashboard.check_app_permission", return_value=False):
+			with self.assertRaises(frappe.PermissionError):
+				get_dashboard()
