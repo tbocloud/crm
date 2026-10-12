@@ -8,21 +8,21 @@ The source of truth for the palette is the hub's `desk/src/theme.css` and
 
 ## Where it lives
 
-Nearly all of the theme is in two new files, so upstream merges from
+Nearly all of the theme is in new files, so upstream merges from
 frappe/crm rarely touch it:
 
 | File | What it does |
 | --- | --- |
 | `frontend/src/tbo-theme.css` | Re-points frappe-ui's v2 tokens (`--surface-gray-*`, `--ink-gray-*`, `--outline-gray-*`, dark `--surface-base`/`--ink-base`). Defines `--brand*`, `--highlight`, the status colours and the fonts. Recolours frappe-ui components: solid and blue buttons, the active sidebar item, tab indicators, segmented controls, the focus ring, today in date pickers and the stock CRM logo. |
+| `frontend/src/fonts/Geist/` | Self-hosted Geist and Geist Mono variable fonts (SIL OFL, licence alongside), so the PWA keeps its type offline and no request goes to a third-party font CDN. |
 | `frontend/tbo-theme.preset.js` | Tailwind preset that adds the `brand`, `highlight`, `success`, `warning`, `danger` and `info` colours (each with `-soft` where it applies), and sets `font-sans`/`font-mono` to Geist. |
 
-Three small hooks wire those files into upstream files:
+Two small hooks wire those files into upstream files:
 
 | Upstream file | Hook |
 | --- | --- |
 | `frontend/src/index.css` | `@import './tbo-theme.css';` after the frappe-ui imports |
 | `frontend/tailwind.config.js` | `import tboThemePreset from './tbo-theme.preset.js'` and `presets: [frappeUIPreset, tboThemePreset]` |
-| `frontend/index.html` | Google Fonts `<link>` for Geist and Geist Mono |
 
 Three one-line class swaps replace hard-coded blue accents:
 
@@ -59,7 +59,7 @@ Rules for new code:
 
 ## Re-applying after an upstream merge
 
-1. Merge `upstream/main` as usual. The two theme files are TBO-only, so they
+1. Merge `upstream/main` as usual. The theme files are TBO-only, so they
    can't conflict.
 2. If a conflict hits one of the hooks in the tables above, keep upstream's
    change and add the hook line back.
