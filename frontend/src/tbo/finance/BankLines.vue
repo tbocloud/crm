@@ -114,7 +114,7 @@
               v-if="line.tbo_possible_duplicate_of"
               class="inline-flex items-center gap-1 text-p-sm text-warning"
             >
-              <LucideCopy class="size-3.5" aria-hidden="true" />{{
+              <LucideCopy class="size-3.5 shrink-0" aria-hidden="true" />{{
                 __('Possible duplicate of {0}', [
                   line.tbo_possible_duplicate_of,
                 ])
