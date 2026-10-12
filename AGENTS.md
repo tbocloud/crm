@@ -17,6 +17,7 @@ they run as evaluated strings in the browser.
 | Why code is the way it is (decisions, bugs fixed, history) | [ARCHIVE.md](./.pi/ARCHIVE.md) |
 | Form scripting user guide | [feats/form-scripting/guide.md](./.pi/feats/form-scripting/guide.md) |
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
+| Colours, fonts, TBO theme (and re-applying it after an upstream merge) | [docs/tbo-theme.md](./docs/tbo-theme.md) |
 
 ---
 

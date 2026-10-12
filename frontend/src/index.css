@@ -1,5 +1,7 @@
 @import 'frappe-ui/style.css';
 @import 'frappe-ui/list-style.css';
+/* TBO theme (docs/tbo-theme.md) */
+@import './tbo-theme.css';
 
 @layer components {
   .prose-f {

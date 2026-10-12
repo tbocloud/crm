@@ -1,7 +1,8 @@
 import frappeUIPreset from 'frappe-ui/tailwind'
+import tboThemePreset from './tbo-theme.preset.js'
 
 export default {
-  presets: [frappeUIPreset],
+  presets: [frappeUIPreset, tboThemePreset],
   content: [
     './index.html',
     './src/**/*.{vue,js,ts,jsx,tsx}',
