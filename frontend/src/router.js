@@ -102,6 +102,12 @@ const routes = [
     name: 'Call Logs',
     component: () => import('@/pages/CallLogs.vue'),
   },
+  // TBO: quotation discount/commission approvals (docs/tbo-quotation-approvals.md)
+  {
+    path: '/approvals',
+    name: 'Quotation Approvals',
+    component: () => import('@/tbo/quotationApprovals/QuotationApprovals.vue'),
+  },
   {
     path: '/data-import',
     name: 'DataImportList',
