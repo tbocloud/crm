@@ -100,7 +100,8 @@ on. Nothing errors in the user's face.
 
 ## Not in this change
 
-- Creating or editing quotations inside the CRM. Quotations still open in the
-  ERPNext form; that belongs to the finance plan's Phase 1.
+- Creating or editing quotations inside the CRM. That arrived with the finance
+  workflow's Phase 1 (`docs/tbo-finance.md`): while it is on, the deal's
+  Finance tab shows these chips and adds the New quotation dialog.
 - A count badge on the sidebar entry, and an Approvals command in the command
   palette.

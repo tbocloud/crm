@@ -1,0 +1,112 @@
+# TBO finance workflow in the CRM
+
+The CRM side of TBO's lead-to-cash workflow. The rules, data and permissions
+belong to tbo_smart: see `docs/crm-finance-workflow.md` in tbocloud/tbo_smart,
+the living spec. The CRM shows the data and calls tbo_smart's APIs, which check
+every permission on the server. The UI only hides what a user can't do.
+
+Everything here is behind **TBO Smart Settings → Finance workflow (Phase 1)**,
+which is off by default. While it is off, or when tbo_smart is not installed,
+the deal keeps the stock **Quotations** tab and nothing below appears.
+
+## What users see (Phase 1)
+
+**Deal → Finance tab.** It replaces the Quotations tab while the workflow is on.
+
+- **Stage strip:** Onboarding → Quotation → Invoiced → Collecting → Collected →
+  Closed. tbo_smart computes the stage from the deal's documents. Done steps
+  have a tick, and the current step is the only brand-coloured element.
+- **Mark onboarding complete** (anyone who may edit the deal, or a finance user)
+  and **Close finance / Reopen** (Accounts Manager or System Manager, only once
+  everything invoiced is collected). Both are logged on the deal.
+- **Totals** per currency: invoiced, received, outstanding and overdue. Overdue
+  is red and has an icon.
+- **Quotations:** status, validity, total, and the discount/commission approval
+  chips from `docs/tbo-quotation-approvals.md`. **New quotation** opens the
+  dialog. Drafts also get **Edit** and **Submit**; submitting still goes through
+  the approval control.
+- **Sales orders**, **Invoices** (with their payment terms under a disclosure,
+  overdue terms flagged) and **Payments received** (date, mode, reference,
+  amount; refunds are marked). Numbers open the ERPNext document.
+- **Follow-ups:** the deal's open CRM tasks, earliest due first ("Next").
+- When TBO Smart Settings → "BDE can see invoice/payment amounts" is off, a
+  salesperson without a manager or accounts role sees the documents without
+  amounts, and a note says why.
+- States: loading, not permitted (403), error with *Try again*, and an empty
+  line per section.
+
+**New quotation dialog.** It replaces the "Create Quotation" action, which
+opened `/app/quotation/new` (tbo_smart hides that action while the workflow is
+on). Items come prefilled from the deal's products, and customer, company and
+contact from the deal. You can set the company, valid till, taxes template,
+items (qty, rate, discount %), additional discount %, commission % and terms.
+Under each % it shows "Your limit" from the approval settings. **Save draft**
+creates or updates a draft Quotation. **Open in ERPNext** is there for anything
+more advanced. On a phone the item rows stack.
+
+**BDE conversion** (`/crm/bde-conversion`, in the sidebar while the workflow is
+on). Leads, deals, conversion rate, submitted quotations, won deals and won
+value per salesperson, with date, client and company filters. The columns
+sort, and there is a total row. The table scrolls sideways on a phone. A
+salesperson sees their own row, a manager their team, and Sales Managers,
+System Managers and the finance roles see everyone.
+
+## Where it lives
+
+| File | What it does |
+| --- | --- |
+| `frontend/src/tbo/finance/api.js` | Method names, the shared access resource (`get_finance_access`), the write calls, and `useDealFinanceRefresh`. |
+| `frontend/src/tbo/finance/finance.js` | Pure rules: stage steps, line and net totals, dialog validation and payload, status tones, overdue terms, report sorting. Tested in `frontend/tests/unit/tboFinance.test.js`. |
+| `frontend/src/tbo/finance/DealFinance.vue` | The Finance tab. |
+| `frontend/src/tbo/finance/StageStrip.vue`, `FinanceSection.vue`, `NumberField.vue` | Stage strip, section shell, numeric input. |
+| `frontend/src/tbo/finance/QuotationDialog.vue` | New / edit quotation dialog. |
+| `frontend/src/tbo/finance/BdeConversion.vue` | The BDE conversion report page. |
+| `frontend/src/tbo/finance/navigation.js` | `tboFinanceNavigationItems()` (sidebar) and `dealFinanceTab()` (Finance or Quotations). |
+
+Small hooks into upstream files:
+
+| Upstream file | Hook |
+| --- | --- |
+| `frontend/src/pages/Deal.vue`, `frontend/src/pages/MobileDeal.vue` | The last tab is `dealFinanceTab(...)` instead of the Quotations entry. |
+| `frontend/src/components/Activities/Activities.vue` | `<DealFinance v-else-if="title == 'Finance'">` after `QuotationsList`. |
+| `frontend/src/components/Activities/ActivityHeader.vue` | No "New" menu on the Finance tab either. |
+| `frontend/src/components/Layouts/AppSidebar.vue` | `...tboFinanceNavigationItems()` in `links`. |
+| `frontend/src/router.js` | The `/bde-conversion` route, named `BDE Conversion`. |
+| `crm/api/__init__.py` | `check_app_permission` also asks the `crm_app_permission` hooks. |
+| `crm/permissions/org_hierarchy.py` | `_unrestricted()` asks the `crm_unrestricted_access` hooks before applying the sales hierarchy. |
+
+On an upstream merge conflict in one of these, keep upstream's change and add
+the hook back.
+
+## Backend extension points (for any app)
+
+- `crm_app_permission`: a list of dotted paths to functions with no
+  arguments. If a user has the FCRM module but none of CRM's own roles, the CRM
+  admits them when any function returns True. tbo_smart registers
+  `tbo_smart.finance.access.has_crm_app_access`, which admits the finance roles
+  in TBO Smart Settings while "Let finance roles open the CRM" is on.
+- `crm_unrestricted_access`: a list of dotted paths to functions
+  `(user, doctype, ptype) -> bool`. When one returns True, that user skips the
+  sales-hierarchy rule for that doctype and permission type (the list
+  condition and the per-document check). tbo_smart returns True only for
+  `CRM Deal` and read-type permissions, so finance roles read every deal but
+  never get write through it. Their actual read right comes from a Custom
+  DocPerm that tbo_smart adds when the setting is saved.
+
+Both are tested in `crm/permissions/test_org_hierarchy.py` and
+`crm/tests/test_app_permission.py`.
+
+## Refresh
+
+The Finance tab reloads on tbo_smart's `tbo_deal_finance_update` realtime
+event (published after a linked quotation, order, invoice or payment is saved,
+submitted or cancelled, or the stage changes), on the CRM's own
+`crm_quotation_update` event, and when the window regains focus. Reloads are
+debounced by 300 ms.
+
+## Not in Phase 1
+
+- Allocation (India share) and Exceptions sections: Phases 3 and 4. The tab has
+  a marked place for them.
+- Receivables, collections and reminders: Phase 2.
+- Finance dashboard cards: Phase 5.

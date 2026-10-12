@@ -19,6 +19,7 @@ they run as evaluated strings in the browser.
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Colours, fonts, TBO theme (and re-applying it after an upstream merge) | [docs/tbo-theme.md](./docs/tbo-theme.md) |
 | Quotation discount/commission approvals (TBO, tbo_smart APIs) | [docs/tbo-quotation-approvals.md](./docs/tbo-quotation-approvals.md) |
+| Deal Finance tab, New quotation dialog, BDE conversion report, CRM extension hooks (TBO) | [docs/tbo-finance.md](./docs/tbo-finance.md) |
 
 ---
 
