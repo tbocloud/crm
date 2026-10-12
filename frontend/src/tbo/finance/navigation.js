@@ -1,3 +1,4 @@
+import LucideArrowLeftRight from '~icons/lucide/arrow-left-right'
 import LucideChartColumn from '~icons/lucide/chart-column'
 import LucideShieldAlert from '~icons/lucide/shield-alert'
 import LucideWallet from '~icons/lucide/wallet'
@@ -28,6 +29,14 @@ export function tboFinanceNavigationItems() {
       label: 'Finance exceptions',
       icon: LucideShieldAlert,
       route: 'Finance Exceptions',
+    })
+  }
+  // Phase 3: India's share, accounts / finance / management only
+  if (access.value?.allocations) {
+    items.push({
+      label: 'Allocations',
+      icon: LucideArrowLeftRight,
+      route: 'Allocations',
     })
   }
   return items
