@@ -1,4 +1,8 @@
 import {
+  exceptionTone,
+  receivablesCsv,
+  validateExceptionRequest,
+  validateFollowUp,
   isPermissionError,
   isTermOverdue,
   lineAmounts,
@@ -199,5 +203,92 @@ describe('localToday', () => {
   it('uses the local calendar date', () => {
     expect(localToday(new Date(2026, 9, 12, 0, 30))).toBe('2026-10-12')
     expect(localToday(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05')
+  })
+})
+
+describe('receivables helpers', () => {
+  it('checks an exception request per type', () => {
+    const today = '2026-10-12'
+    expect(
+      validateExceptionRequest(
+        {
+          exception_type: 'Extension request',
+          reason: 'x',
+          new_due_date: '2026-10-20',
+        },
+        today,
+      ),
+    ).toEqual({})
+    expect(
+      Object.keys(
+        validateExceptionRequest(
+          { exception_type: 'Extension request', reason: '' },
+          today,
+        ),
+      ).sort(),
+    ).toEqual(['new_due_date', 'reason'])
+    expect(
+      validateExceptionRequest(
+        {
+          exception_type: 'Client dispute',
+          reason: 'x',
+          pause_until: '2026-10-01',
+        },
+        today,
+      ).pause_until,
+    ).toBeTruthy()
+    expect(
+      validateExceptionRequest(
+        { exception_type: 'Write-off request', reason: 'x' },
+        today,
+      ),
+    ).toEqual({})
+    expect(
+      validateExceptionRequest({ exception_type: 'Other', reason: 'x' }, today)
+        .exception_type,
+    ).toBeTruthy()
+  })
+
+  it('checks a follow-up', () => {
+    expect(
+      validateFollowUp(
+        { due_date: '2026-10-13', promised_amount: '' },
+        '2026-10-12',
+      ),
+    ).toEqual({})
+    expect(
+      Object.keys(
+        validateFollowUp(
+          { due_date: '', promised_date: '2026-10-01', promised_amount: -5 },
+          '2026-10-12',
+        ),
+      ).sort(),
+    ).toEqual(['due_date', 'promised_amount', 'promised_date'])
+  })
+
+  it('exports receivables as CSV with quoting', () => {
+    const csv = receivablesCsv([
+      {
+        invoice: 'SINV-1',
+        customer_name: 'Acme, "Trading"',
+        company: 'TBO KSA',
+        currency: 'SAR',
+        due_date: '2026-10-01',
+        outstanding: 100,
+        overdue: 100,
+        buckets: { '0_30': 100 },
+        escalation_level: 2,
+      },
+    ])
+    const [header, line] = csv.split('\n')
+    expect(header.startsWith('Invoice,Customer')).toBe(true)
+    expect(line).toContain('"Acme, ""Trading"""')
+    expect(line.split(',').length).toBeGreaterThan(10)
+  })
+
+  it('gives each exception status a tone', () => {
+    expect(exceptionTone('Pending Approval')).toBe('orange')
+    expect(exceptionTone('Approved')).toBe('green')
+    expect(exceptionTone('Unknown')).toBe('gray')
   })
 })

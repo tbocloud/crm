@@ -22,6 +22,12 @@ export const methods = {
   saveQuotation: `${API}.quotation.save_quotation`,
   submitQuotation: `${API}.quotation.submit_quotation`,
   conversion: `${API}.report.get_bde_conversion`,
+  receivables: `${API}.receivables.get_receivables`,
+  followUp: `${API}.receivables.add_collection_follow_up`,
+  accountsOwner: `${API}.receivables.set_accounts_owner`,
+  exceptions: `${API}.exceptions.get_exceptions`,
+  requestException: `${API}.exceptions.request_exception`,
+  decideException: `${API}.exceptions.decide_exception`,
 }
 
 let accessResource
@@ -74,6 +80,16 @@ export const saveQuotation = (deal, values, quotation) =>
 
 export const submitQuotation = (deal, quotation) =>
   call(methods.submitQuotation, { deal, quotation })
+
+export const addFollowUp = (args) => call(methods.followUp, args)
+
+export const setAccountsOwner = (deal, user) =>
+  call(methods.accountsOwner, { deal, user: user || null })
+
+export const requestException = (args) => call(methods.requestException, args)
+
+export const decideException = (name, action, remarks) =>
+  call(methods.decideException, { name, action, remarks: remarks || null })
 
 export const getItemPrice = (item_code, company) =>
   call(methods.itemPrice, { item_code, company })

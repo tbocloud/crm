@@ -141,3 +141,125 @@ export function sortRows(rows, key, direction = 'desc') {
       : String(a.full_name || '').localeCompare(String(b.full_name || ''))
   })
 }
+
+// Ageing buckets of the Receivables page, in order.
+export const AGEING_BUCKETS = [
+  { key: 'not_due', label: 'Not due' },
+  { key: '0_30', label: '1-30 days' },
+  { key: '31_60', label: '31-60 days' },
+  { key: '61_90', label: '61-90 days' },
+  { key: '90_plus', label: '90+ days' },
+]
+
+// What a user can ask for on an invoice, and the extra field each one needs.
+export const EXCEPTION_REQUESTS = [
+  {
+    type: 'Extension request',
+    label: 'Extend the due date',
+    needs: 'new_due_date',
+  },
+  { type: 'Pause request', label: 'Pause reminders', needs: 'pause_until' },
+  {
+    type: 'Client dispute',
+    label: 'Client dispute (pauses reminders)',
+    needs: 'pause_until',
+  },
+  {
+    type: 'Write-off request',
+    label: 'Write off the balance',
+    needs: 'resolution',
+  },
+]
+
+// Field errors for the exception dialog.
+export function validateExceptionRequest(form, today) {
+  const errors = {}
+  const request = EXCEPTION_REQUESTS.find(
+    (row) => row.type === form.exception_type,
+  )
+  if (!request) errors.exception_type = __('Choose what you need.')
+  if (!form.reason?.trim()) errors.reason = __('Give a reason.')
+  if (request?.needs === 'new_due_date') {
+    if (!form.new_due_date) errors.new_due_date = __('Choose the new due date.')
+    else if (form.new_due_date < today)
+      errors.new_due_date = __('The new due date cannot be in the past.')
+  }
+  if (request?.needs === 'pause_until') {
+    if (!form.pause_until) errors.pause_until = __('Choose until when.')
+    else if (form.pause_until < today)
+      errors.pause_until = __('The date cannot be in the past.')
+  }
+  return errors
+}
+
+// Field errors for the follow-up dialog.
+export function validateFollowUp(form, today) {
+  const errors = {}
+  if (!form.due_date) errors.due_date = __('Choose the next follow-up date.')
+  if (form.promised_date && form.promised_date < today)
+    errors.promised_date = __('The promised date cannot be in the past.')
+  if (
+    form.promised_amount !== '' &&
+    form.promised_amount != null &&
+    Number(form.promised_amount) < 0
+  )
+    errors.promised_amount = __('The amount cannot be negative.')
+  return errors
+}
+
+// The receivables rows as CSV (Excel-friendly), for the Export button.
+export function receivablesCsv(rows) {
+  const header = [
+    'Invoice',
+    'Customer',
+    'Company',
+    'Currency',
+    'Due date',
+    'Outstanding',
+    'Overdue',
+    ...AGEING_BUCKETS.map((bucket) => bucket.label),
+    'Deal owner',
+    'Accounts owner',
+    'Escalation level',
+    'Last reminder',
+    'Promised date',
+    'Promised amount',
+  ]
+  const cell = (value) => {
+    const text = value === null || value === undefined ? '' : String(value)
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  }
+  const lines = rows.map((row) =>
+    [
+      row.invoice,
+      row.customer_name,
+      row.company,
+      row.currency,
+      row.due_date,
+      row.outstanding,
+      row.overdue,
+      ...AGEING_BUCKETS.map((bucket) => row.buckets?.[bucket.key] ?? 0),
+      row.deal_owner_name || row.deal_owner,
+      row.accounts_owner_name || row.accounts_owner,
+      row.escalation_level,
+      row.last_reminder,
+      row.promised_date,
+      row.promised_amount,
+    ]
+      .map(cell)
+      .join(','),
+  )
+  return [header.map(cell).join(','), ...lines].join('\n')
+}
+
+// Exception status → badge tone; colour always comes with the status text.
+export function exceptionTone(status) {
+  return (
+    {
+      Open: 'gray',
+      'Pending Approval': 'orange',
+      Approved: 'green',
+      Rejected: 'red',
+    }[status] || 'gray'
+  )
+}
