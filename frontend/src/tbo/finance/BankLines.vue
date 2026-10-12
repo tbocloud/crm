@@ -171,7 +171,8 @@ async function verify(line) {
   try {
     await verifyBankLine(line.name)
     toast.success(__('{0} verified', [line.name]))
-    load(queue)
+    // keep the row disabled until the refreshed queue no longer lists it
+    await load(queue)
   } catch (e) {
     toast.error(errorMessage(e))
   } finally {
