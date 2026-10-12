@@ -4,8 +4,9 @@ app_publisher = "Frappe Technologies Pvt. Ltd."
 app_description = "Kick-ass Open Source CRM"
 app_email = "shariq@frappe.io"
 app_license = "AGPLv3"
-app_icon_url = "/assets/crm/images/logo.svg"
-app_icon_title = "CRM"
+# TBO: default logo and name (docs/tbo-theme.md)
+app_icon_url = "/assets/crm/tbo/tbo-mark.svg"
+app_icon_title = "TBO CRM"
 app_icon_route = "/crm"
 
 # Apps
@@ -15,8 +16,8 @@ app_icon_route = "/crm"
 add_to_apps_screen = [
 	{
 		"name": "crm",
-		"logo": "/assets/crm/images/logo.svg",
-		"title": "CRM",
+		"logo": "/assets/crm/tbo/tbo-mark.svg",
+		"title": "TBO CRM",
 		"route": "/crm",
 		"has_permission": "crm.api.check_app_permission",
 	}
