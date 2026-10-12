@@ -17,6 +17,7 @@ const TBO_FAVICON = '/assets/crm/tbo/favicon.svg'
  * rel="icon" as the default and swaps in the Brand Settings favicon.
  */
 export function tboBrand() {
+  let logoSwapped = false
   return {
     name: 'tbo-brand',
     enforce: 'pre',
@@ -24,24 +25,40 @@ export function tboBrand() {
       // '@/components/Icons/CRMLogo.vue' reaches here already resolved by the alias
       if (
         source.replaceAll('\\', '/').endsWith('/components/Icons/CRMLogo.vue')
-      )
+      ) {
+        logoSwapped = true
         return TBO_LOGO
+      }
+    },
+    // An upstream rename would otherwise ship the stock logo without a word.
+    generateBundle() {
+      if (!logoSwapped)
+        this.error('tbo-brand: nothing imported components/Icons/CRMLogo.vue')
     },
     transformIndexHtml(html) {
-      return html
-        .replace(
+      let out = html
+      for (const [pattern, value] of [
+        [
           /<link\s+rel="icon"[^>]*>/,
           `<link rel="icon" type="image/svg+xml" href="${TBO_FAVICON}" />`,
-        )
-        .replaceAll(UPSTREAM_MANIFEST_DIR, TBO_MANIFEST_DIR)
-        .replace(
-          '<title>Frappe CRM</title>',
-          `<title>${TBO_BRAND_NAME}</title>`,
-        )
-        .replace(
+        ],
+        [UPSTREAM_MANIFEST_DIR, TBO_MANIFEST_DIR],
+        ['<title>Frappe CRM</title>', `<title>${TBO_BRAND_NAME}</title>`],
+        [
           'name="apple-mobile-web-app-title" content="Frappe CRM"',
           `name="apple-mobile-web-app-title" content="${TBO_BRAND_NAME}"`,
-        )
+        ],
+      ]) {
+        const next =
+          typeof pattern === 'string'
+            ? out.replaceAll(pattern, value)
+            : out.replace(pattern, value)
+        // Fail rather than ship stock branding when upstream's index.html changes.
+        if (next === out)
+          throw new Error(`tbo-brand: index.html has no match for ${pattern}`)
+        out = next
+      }
+      return out
     },
   }
 }

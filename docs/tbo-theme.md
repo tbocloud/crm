@@ -75,6 +75,10 @@ component or `index.html` line changes:
   splash screens from `/assets/crm/manifest/` to `/assets/crm/tbo/manifest/`
   (same file names); and sets `<title>` and `apple-mobile-web-app-title` to
   "TBO CRM".
+- The build fails if any of these no longer matches (nothing imports
+  `CRMLogo.vue`, or `index.html` lost its `rel="icon"`, its `/assets/crm/manifest/`
+  links, its "Frappe CRM" title or iOS title), so an upstream change can't
+  quietly ship the stock branding.
 - `tboManifest()` gives the PWA manifest the name "TBO CRM", the brand teal as
   `theme_color`, and the icons from `/assets/crm/tbo/manifest/`.
 
