@@ -174,7 +174,7 @@ Small hooks into upstream files:
 | `frontend/src/router.js` | The `/bde-conversion`, `/receivables`, `/finance-exceptions` and `/allocations` routes (`BDE Conversion`, `Receivables`, `Finance Exceptions`, `Allocations`). |
 | `crm/api/__init__.py` | `check_app_permission` also asks the `crm_app_permission` hooks. |
 | `crm/permissions/org_hierarchy.py` | `_unrestricted()` asks the `crm_unrestricted_access` hooks before applying the sales hierarchy. |
-| `crm/api/dashboard.py` | `get_chart_method()` also looks in `crm_dashboard_providers` modules; `get_dashboard` appends `crm_dashboard_layout` cards (marked `provider`, dropped from the saved layout); `dashboard_user_only` also admits `crm_app_permission` users. |
+| `crm/api/dashboard.py` | `get_chart_method()` also looks in `crm_dashboard_providers` modules; `get_dashboard` appends `crm_dashboard_layout` cards (marked `provider`, dropped from the saved layout); `dashboard_user_only` also admits users who pass `check_app_permission()` (FCRM module, then `crm_app_permission`); sales users are checked first. Provider cards wrap below the tallest card of their row. |
 
 On an upstream merge conflict in one of these, keep upstream's change and add
 the hook back.
