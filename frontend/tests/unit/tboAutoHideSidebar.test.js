@@ -129,6 +129,17 @@ describe('useAutoHideSidebar', () => {
     expect(view.state.isCollapsed.value).toBe(true)
   })
 
+  it('stays open across a navigation while held', async () => {
+    const held = ref(false)
+    view = mountSidebar({ held })
+    view.on.onPointerdownCapture(touch)
+    held.value = true
+    await nextTick()
+    route.fullPath = '/contacts'
+    await nextTick()
+    expect(view.state.isCollapsed.value).toBe(false)
+  })
+
   it('pins open per user, and stays open when unpinned under the pointer', async () => {
     view = mountSidebar()
     view.state.togglePinned()

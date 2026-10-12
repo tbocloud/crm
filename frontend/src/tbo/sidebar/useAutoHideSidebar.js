@@ -146,12 +146,13 @@ export function useAutoHideSidebar({ mobile, held = false, user }) {
     }
   })
 
-  // a tap on an item navigated; fold the expanded rail away again
+  // a tap on an item navigated; fold the expanded rail away again, unless
+  // something it opened (the notifications panel) still holds it
   const route = useRoute()
   watch(
     () => route?.fullPath,
     () => {
-      if (autoHide.value && !pointerInside && !keyboardInside.value) {
+      if (autoHide.value && !pointerInside && !holdOpen.value) {
         setPeeking(false)
       }
     },
