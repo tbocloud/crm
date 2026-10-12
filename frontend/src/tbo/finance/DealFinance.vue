@@ -97,7 +97,7 @@
         <dl
           v-for="total in data.totals"
           :key="total.currency"
-          class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-outline-gray-2 bg-outline-gray-2 sm:grid-cols-4"
+          class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-outline-gray-2 bg-[var(--outline-gray-2)] sm:grid-cols-4"
         >
           <div
             v-for="cell in totalCells(total)"

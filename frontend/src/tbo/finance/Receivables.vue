@@ -136,7 +136,7 @@
             <dl
               v-for="total in report.data.totals"
               :key="total.currency"
-              class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-outline-gray-2 bg-outline-gray-2 sm:grid-cols-3 lg:grid-cols-7"
+              class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-outline-gray-2 bg-[var(--outline-gray-2)] sm:grid-cols-3 lg:grid-cols-7"
             >
               <div class="flex flex-col gap-1 bg-surface-base px-4 py-3">
                 <dt class="text-p-sm text-ink-gray-6">
