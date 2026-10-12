@@ -1,11 +1,14 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
+from unittest.mock import patch
+
 import frappe
 from frappe.utils.nestedset import rebuild_tree
 
 from crm.api.activities import get_activities
 from crm.permissions.org_hierarchy import (
+	get_deal_permission_query_conditions,
 	get_lead_permission_query_conditions,
 	has_deal_permission,
 	has_lead_permission,
@@ -132,6 +135,16 @@ class TestOrgHierarchy(FrappeTestCase):
 		deal = make_deal("rep2@hier.test")
 		self.assertFalse(has_deal_permission(deal, "read", "rep1@hier.test"))
 
+	def test_unrestricted_hook_opens_reads_only(self):
+		deal = make_deal("rep2@hier.test")
+		self.assertFalse(has_deal_permission(deal, "read", "outsider@hier.test"))
+		with patch_unrestricted_hook():
+			self.assertTrue(has_deal_permission(deal, "read", "outsider@hier.test"))
+			self.assertFalse(has_deal_permission(deal, "write", "outsider@hier.test"))
+			self.assertFalse(get_deal_permission_query_conditions("outsider@hier.test"))
+			self.assertTrue(get_deal_permission_query_conditions("rep1@hier.test"))
+			self.assertTrue(get_lead_permission_query_conditions("outsider@hier.test"))
+
 	# ------------------------------------------------------------------
 	# Deal activities
 	# ------------------------------------------------------------------
@@ -209,6 +222,22 @@ class TestOrgHierarchy(FrappeTestCase):
 		finally:
 			settings.enable_sales_hierarchy = 1
 			settings.save(ignore_permissions=True)
+
+
+def allow_outsider_deal_reads(user, doctype, ptype):
+	"""A crm_unrestricted_access hook as another app (tbo_smart) registers it."""
+	return user == "outsider@hier.test" and doctype == "CRM Deal" and ptype in ("read", None)
+
+
+def patch_unrestricted_hook():
+	get_hooks = frappe.get_hooks
+
+	def hooks(hook=None, *args, **kwargs):
+		if hook == "crm_unrestricted_access":
+			return ["crm.permissions.test_org_hierarchy.allow_outsider_deal_reads"]
+		return get_hooks(hook, *args, **kwargs)
+
+	return patch("frappe.get_hooks", side_effect=hooks)
 
 
 def delete_test_documents():

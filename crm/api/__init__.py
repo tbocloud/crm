@@ -73,7 +73,8 @@ def check_app_permission():
 	if any(role in ["System Manager", "Sales User", "Sales Manager"] for role in roles):
 		return True
 
-	return False
+	# TBO: other apps may admit more users, e.g. tbo_smart's finance roles (docs/tbo-finance.md)
+	return any(frappe.get_attr(method)() for method in frappe.get_hooks("crm_app_permission"))
 
 
 @frappe.whitelist(
