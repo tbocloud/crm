@@ -186,6 +186,7 @@ import UserDropdown from '@/components/UserDropdown.vue'
 import SquareAsterisk from '@/components/Icons/SquareAsterisk.vue'
 import WebsiteIcon from '@/components/Icons/WebsiteIcon.vue'
 import { getNavigationItems } from '@/utils/navigation'
+import { tboNavigationItems } from '@/tbo/quotationApprovals/navigation'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
@@ -251,7 +252,11 @@ const isCollapsed = computed(() => isSidebarCollapsed.value && !props.mobile)
 const isFCSite = ref(window.is_fc_site)
 const isDemoSite = ref(window.is_demo_site)
 
-const links = getNavigationItems({ mobile: props.mobile })
+// TBO: tboNavigationItems adds Approvals for approvers (docs/tbo-quotation-approvals.md)
+const links = computed(() => [
+  ...getNavigationItems({ mobile: props.mobile }),
+  ...tboNavigationItems(),
+])
 
 const allViews = computed(() => {
   let _views = [
@@ -259,7 +264,7 @@ const allViews = computed(() => {
       name: 'All Views',
       hideLabel: true,
       opened: true,
-      views: links.map((link) => ({
+      views: links.value.map((link) => ({
         label: link.label,
         icon: link.icon,
         key: link.route,
