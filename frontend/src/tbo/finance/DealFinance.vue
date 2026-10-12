@@ -48,7 +48,9 @@
             />
             <Button
               v-if="
-                data.can_close && (data.closed || data.stage === 'Collected')
+                data.can_close &&
+                (data.closed ||
+                  data.stage === (data.closable_stage || 'Collected'))
               "
               :label="data.closed ? __('Reopen') : __('Close finance')"
               :iconLeft="data.closed ? LucideLockOpen : LucideLock"

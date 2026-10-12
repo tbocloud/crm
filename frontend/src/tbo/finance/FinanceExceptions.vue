@@ -55,11 +55,25 @@
               }}
             </p>
           </div>
-          <TabButtons v-model="tab" :options="tabs" />
+          <div class="flex flex-wrap items-center gap-2">
+            <FormControl
+              v-if="tab !== 'bank'"
+              v-model="category"
+              type="select"
+              :aria-label="__('Category')"
+              :options="[
+                { label: __('All categories'), value: '' },
+                ...CATEGORIES.map((value) => ({ label: __(value), value })),
+              ]"
+            />
+            <TabButtons v-model="tab" :options="tabs" />
+          </div>
         </div>
 
+        <BankLines v-if="tab === 'bank'" ref="bankLines" />
+
         <div
-          v-if="list.loading && !list.data"
+          v-else-if="list.loading && !list.data"
           class="flex items-center justify-center gap-2 py-16 text-base text-ink-gray-6"
         >
           <LoadingIndicator class="size-4" />
@@ -150,6 +164,16 @@
             </p>
             <p class="whitespace-pre-line text-p-base text-ink-gray-8">
               {{ row.reason }}
+            </p>
+            <p
+              v-if="row.first_approved_by && row.status === 'Pending Approval'"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{
+                __('First approval by {0}; a second approver is needed.', [
+                  row.first_approved_by,
+                ])
+              }}
             </p>
             <p v-if="row.approved_by" class="text-p-sm text-ink-gray-6">
               {{ __('Decided by {0}', [row.approved_by])
@@ -264,6 +288,7 @@ import LucideLock from '~icons/lucide/lock'
 import LucideRefreshCw from '~icons/lucide/refresh-cw'
 import LucideShieldAlert from '~icons/lucide/shield-alert'
 import LucideX from '~icons/lucide/x'
+import BankLines from './BankLines.vue'
 import {
   decideException,
   errorMessage,
@@ -277,7 +302,14 @@ usePageMeta(() => ({ title: __('Finance exceptions') }))
 
 const { user } = sessionStore()
 const { access, loading: accessLoading } = useFinanceAccess()
-const receivablesOn = computed(() => Boolean(access.value?.receivables))
+// any phase that raises exceptions opens the page (receivables, allocation, reconciliation)
+const receivablesOn = computed(() =>
+  Boolean(
+    access.value?.receivables ||
+    access.value?.allocations ||
+    access.value?.reconciliation,
+  ),
+)
 const formId = `tbo-decision-${Math.random().toString(36).slice(2, 8)}`
 
 const tabs = computed(() => [
@@ -286,8 +318,19 @@ const tabs = computed(() => [
     : []),
   { label: __('Open'), value: 'open' },
   { label: __('All'), value: 'all' },
+  ...(access.value?.reconciliation
+    ? [{ label: __('Bank lines'), value: 'bank' }]
+    : []),
 ])
+const CATEGORIES = [
+  'Receivable',
+  'Allocation',
+  'Transfer',
+  'Bank Reconciliation',
+]
+const category = ref('')
 const tab = ref('open')
+const bankLines = ref(null)
 watch(
   () => access.value?.is_approver,
   (approver) => {
@@ -296,10 +339,17 @@ watch(
   { immediate: true },
 )
 
-const STATUS_BY_TAB = { waiting: 'Pending Approval', open: null, all: null }
+const STATUS_BY_TAB = {
+  waiting: 'Pending Approval',
+  open: null,
+  all: null,
+  bank: null,
+}
 const list = createResource({ url: methods.exceptions })
 const rows = computed(() => {
-  const all = list.data?.rows || []
+  const all = (list.data?.rows || []).filter(
+    (row) => !category.value || row.category === category.value,
+  )
   if (tab.value === 'waiting') return all.filter((row) => row.can_decide)
   if (tab.value === 'open')
     return all.filter((row) =>
@@ -309,6 +359,7 @@ const rows = computed(() => {
 })
 function reload() {
   if (!receivablesOn.value) return
+  if (tab.value === 'bank') return bankLines.value?.reload()
   load(list, { status: STATUS_BY_TAB[tab.value] })
 }
 watch([receivablesOn, tab], ([on]) => on && reload(), { immediate: true })

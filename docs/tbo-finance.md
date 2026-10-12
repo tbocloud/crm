@@ -105,6 +105,25 @@ accounts, finance and management (tbo_smart refuses everyone else).
 - Nothing here posts to the accounts. The page says so (memo only, open
   question Q1).
 
+## What users see (Phase 4)
+
+Behind **TBO Smart Settings → Reconciliation and approvals (Phase 4)**.
+
+- **Finance exceptions** now lists every category: receivable, allocation,
+  transfer and bank reconciliation. A category filter narrows it. The page
+  appears once any of Phases 2-4 is on.
+- An exception above the second-approval amount shows "First approval by …; a
+  second approver is needed" until a different approver approves it.
+- A **Bank lines** tab for accounts, finance and management:
+  - lines matched in ERPNext's Bank Reconciliation Tool and waiting for
+    verification, with **Verify** for a second person (it says "You matched it"
+    to the person who matched it);
+  - lines not matched yet, with their age (red after the alert days) and any
+    possible-duplicate flag.
+- **Deal → Finance tab:** the stage strip adds Settling and Reconciled.
+  *Close finance* appears once the deal reaches the stage tbo_smart requires:
+  Reconciled with Phase 4 on.
+
 ## Where it lives
 
 | File | What it does |
@@ -120,6 +139,7 @@ accounts, finance and management (tbo_smart refuses everyone else).
 | `frontend/src/tbo/finance/FinanceExceptions.vue` | The Finance exceptions page with the decision dialog. |
 | `frontend/src/tbo/finance/FollowUpDialog.vue`, `ExceptionDialog.vue` | Follow-up and exception request dialogs (Receivables page and Finance tab). |
 | `frontend/src/tbo/finance/Allocations.vue`, `TransferDialog.vue` | Allocations & transfers page and the New transfer dialog (Phase 3). |
+| `frontend/src/tbo/finance/BankLines.vue` | The Bank lines tab of Finance exceptions (Phase 4). |
 
 Small hooks into upstream files:
 
@@ -164,5 +184,4 @@ debounced by 300 ms.
 
 ## Not built yet
 
-- Bank-reconciliation exceptions and line verification: Phase 4.
 - Finance dashboard cards: Phase 5.
