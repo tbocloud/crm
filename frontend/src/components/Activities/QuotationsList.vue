@@ -49,6 +49,13 @@
             </div>
           </div>
         </a>
+        <!-- TBO: discount/commission approval (docs/tbo-quotation-approvals.md) -->
+        <QuotationAdjustments
+          :quotation="quotation.name"
+          :status="adjustments.statusFor(quotation.name)"
+          :access="adjustments.access.value"
+          @changed="adjustments.reload()"
+        />
         <div
           v-if="i < rows.length - 1"
           class="h-px border-t border-outline-elevation-2"
@@ -65,6 +72,8 @@ import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import { formatDate } from '@/utils'
 import { formatCurrency } from '@/utils/numberFormat.js'
 import { globalStore } from '@/stores/global'
+import QuotationAdjustments from '@/tbo/quotationApprovals/QuotationAdjustments.vue'
+import { useQuotationAdjustments } from '@/tbo/quotationApprovals/useQuotationAdjustments'
 import { Badge, createResource } from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted } from 'vue'
 
@@ -81,10 +90,16 @@ const quotations = createResource({
 })
 
 const rows = computed(() => quotations.data || [])
+const adjustments = useQuotationAdjustments(() =>
+  rows.value.map((row) => row.name),
+)
 
 // live-refresh when a quotation for this deal is created/updated/deleted (same-site)
 function onQuotationUpdate(data) {
-  if (data?.crm_deal === props.deal) quotations.reload()
+  if (data?.crm_deal === props.deal) {
+    quotations.reload()
+    adjustments.reload()
+  }
 }
 onMounted(() => $socket.on('crm_quotation_update', onQuotationUpdate))
 onBeforeUnmount(() => $socket.off('crm_quotation_update', onQuotationUpdate))
