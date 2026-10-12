@@ -1,3 +1,4 @@
+import functools
 import json
 
 import frappe
@@ -7,7 +8,64 @@ from frappe.query_builder.functions import Avg, Coalesce, Count, Date, DateForma
 from pypika.functions import Function
 
 from crm.fcrm.doctype.crm_dashboard.crm_dashboard import create_default_manager_dashboard
-from crm.utils import sales_user_only
+from crm.utils import is_sales_user
+
+
+def dashboard_user_only(fn):
+	"""Sales users, plus users another app admits to the CRM (`crm_app_permission` hooks), e.g.
+	tbo_smart's finance roles. TBO: docs/tbo-finance.md."""
+
+	@functools.wraps(fn)
+	def wrapper(*args, **kwargs):
+		# sales users first, so a failing hook never locks them out
+		admitted = is_sales_user() or any(
+			frappe.get_attr(method)() for method in frappe.get_hooks("crm_app_permission")
+		)
+		if not admitted:
+			frappe.throw(
+				msg=_("You are not permitted to access this resource."),
+				title=_("Not Allowed"),
+				exc=frappe.PermissionError,
+			)
+		return fn(*args, **kwargs)
+
+	return wrapper
+
+
+def get_chart_method(name: str):
+	"""`get_<name>` from this module, else from a module another app registers in the
+	`crm_dashboard_providers` hook. TBO: docs/tbo-finance.md."""
+	method_name = f"get_{name}"
+	for module in ["crm.api.dashboard", *frappe.get_hooks("crm_dashboard_providers")]:
+		provider = frappe.get_module(module)
+		if hasattr(provider, method_name):
+			return getattr(provider, method_name)
+	return None
+
+
+def get_provider_items(from_date, to_date, user) -> list:
+	"""Cards other apps add for the current user (`crm_dashboard_layout` hooks), already with
+	their data, placed below the saved layout. They are marked `provider` and are never kept
+	in the saved layout, so a card follows its app's rules (role, switch) on every load."""
+	items = []
+	for path in frappe.get_hooks("crm_dashboard_layout"):
+		items += frappe.get_attr(path)(from_date, to_date, user) or []
+	return items
+
+
+def place_provider_items(layout: list, items: list) -> list:
+	bottom = max((l["layout"]["y"] + l["layout"]["h"] for l in layout if l.get("layout")), default=0)
+	x = row_height = 0
+	for item in items:
+		width, height = item.get("w", 4), item.get("h", 3)
+		if x + width > 20:
+			# wrap below the tallest card of the row just finished
+			x, bottom, row_height = 0, bottom + row_height, 0
+		item["provider"] = True
+		item["layout"] = {"x": x, "y": bottom, "w": width, "h": height, "i": item["name"]}
+		x += width
+		row_height = max(row_height, height)
+	return items
 
 
 # Custom function for TIMESTAMPDIFF (MySQL/MariaDB)
@@ -23,7 +81,7 @@ def reset_to_default():
 
 
 @frappe.whitelist()
-@sales_user_only
+@dashboard_user_only
 def get_dashboard(from_date: str | None = None, to_date: str | None = None, user: str | None = None):
 	"""
 	Get the dashboard data for the CRM dashboard.
@@ -50,19 +108,17 @@ def get_dashboard(from_date: str | None = None, to_date: str | None = None, user
 	else:
 		layout = json.loads(frappe.db.get_value("CRM Dashboard", "Manager Dashboard", "layout") or "[]")
 
+	# TBO: provider cards are rebuilt on every load, never read from the saved layout
+	layout = [l for l in layout if not l.get("provider")]
 	for l in layout:
-		method_name = f"get_{l['name']}"
-		if hasattr(frappe.get_attr("crm.api.dashboard"), method_name):
-			method = getattr(frappe.get_attr("crm.api.dashboard"), method_name)
-			l["data"] = method(from_date, to_date, user)
-		else:
-			l["data"] = None
+		method = get_chart_method(l["name"])
+		l["data"] = method(from_date, to_date, user) if method else None
 
-	return layout
+	return layout + place_provider_items(layout, get_provider_items(from_date, to_date, user))
 
 
 @frappe.whitelist()
-@sales_user_only
+@dashboard_user_only
 def get_chart(
 	name: str, type: str, from_date: str | None = None, to_date: str | None = None, user: str | None = None
 ):
@@ -80,12 +136,10 @@ def get_chart(
 	if is_sales_user:
 		user = frappe.session.user
 
-	method_name = f"get_{name}"
-	if hasattr(frappe.get_attr("crm.api.dashboard"), method_name):
-		method = getattr(frappe.get_attr("crm.api.dashboard"), method_name)
+	method = get_chart_method(name)
+	if method:
 		return method(from_date, to_date, user)
-	else:
-		return {"error": _("Invalid chart name")}
+	return {"error": _("Invalid chart name")}
 
 
 def get_total_leads(from_date: str | None = None, to_date: str | None = None, user: str | None = None):

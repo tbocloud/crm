@@ -124,6 +124,28 @@ Behind **TBO Smart Settings → Reconciliation and approvals (Phase 4)**.
   *Close finance* appears once the deal reaches the stage tbo_smart requires:
   Reconciled with Phase 4 on.
 
+## What users see (Phase 5)
+
+Behind **TBO Smart Settings → Finance dashboard (Phase 5)**.
+
+The CRM dashboard (`/crm/dashboard`) adds finance cards under the CRM's own
+cards, chosen per user by tbo_smart:
+
+- CRM users get Quotations, Invoiced, Collected, Outstanding, Overdue and Lead →
+  deal. A salesperson's figures cover only their own deals, because the CRM
+  already sets the dashboard's user to them. The amount cards drop out when
+  "BDE can see invoice/payment amounts" is off.
+- Accounts, finance and management also get Payable to partner, Transfers
+  waiting, Bank lines to verify and Open exceptions, each while its phase is on.
+
+These cards are not part of the saved layout. They are rebuilt on every load,
+so they always follow the user's role and the switches. Editing and saving the
+dashboard never duplicates them.
+
+**Deviation:** the CRM dashboard filters only by date range and user, so the
+cards have no client or company filter. The Receivables and BDE conversion
+pages have those filters.
+
 ## Where it lives
 
 | File | What it does |
@@ -152,6 +174,7 @@ Small hooks into upstream files:
 | `frontend/src/router.js` | The `/bde-conversion`, `/receivables`, `/finance-exceptions` and `/allocations` routes (`BDE Conversion`, `Receivables`, `Finance Exceptions`, `Allocations`). |
 | `crm/api/__init__.py` | `check_app_permission` also asks the `crm_app_permission` hooks. |
 | `crm/permissions/org_hierarchy.py` | `_unrestricted()` asks the `crm_unrestricted_access` hooks before applying the sales hierarchy. |
+| `crm/api/dashboard.py` | `get_chart_method()` also looks in `crm_dashboard_providers` modules; `get_dashboard` appends `crm_dashboard_layout` cards (marked `provider`, dropped from the saved layout); `dashboard_user_only` also admits `crm_app_permission` users. |
 
 On an upstream merge conflict in one of these, keep upstream's change and add
 the hook back.
@@ -171,8 +194,15 @@ the hook back.
   never get write through it. Their actual read right comes from a Custom
   DocPerm that tbo_smart adds when the setting is saved.
 
-Both are tested in `crm/permissions/test_org_hierarchy.py` and
-`crm/tests/test_app_permission.py`.
+- `crm_dashboard_providers`: modules whose `get_<name>(from_date, to_date, user)`
+  functions the dashboard's `get_chart` can resolve, like those in
+  `crm.api.dashboard`.
+- `crm_dashboard_layout`: functions `(from_date, to_date, user) -> list` that
+  return extra cards with their `data` for the current user. The CRM places them
+  below the saved layout.
+
+They are tested in `crm/permissions/test_org_hierarchy.py`,
+`crm/tests/test_app_permission.py` and `crm/tests/test_dashboard_providers.py`.
 
 ## Refresh
 
@@ -184,4 +214,4 @@ debounced by 300 ms.
 
 ## Not built yet
 
-- Finance dashboard cards: Phase 5.
+See tbo_smart `docs/crm-finance-workflow.md` §14 for the follow-ups of each phase.
