@@ -38,7 +38,11 @@
         role="alert"
         class="flex flex-wrap items-center gap-2 text-p-sm text-danger"
       >
-        {{ __('Could not load the salespeople: {0}', [errorMessage(people.error)]) }}
+        {{
+          __('Could not load the salespeople: {0}', [
+            errorMessage(people.error),
+          ])
+        }}
         <Button size="sm" :label="__('Try again')" @click="load(people)" />
       </p>
       <div
