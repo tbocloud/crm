@@ -129,6 +129,12 @@ const routes = [
     name: 'Allocations',
     component: () => import('@/tbo/finance/Allocations.vue'),
   },
+  // TBO: smart leads (docs/tbo-smart-leads.md)
+  {
+    path: '/call-today',
+    name: 'Call Today',
+    component: () => import('@/tbo/smartLeads/CallToday.vue'),
+  },
   {
     path: '/data-import',
     name: 'DataImportList',

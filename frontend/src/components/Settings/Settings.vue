@@ -94,8 +94,13 @@ import { ref, markRaw, computed, watch, h, nextTick } from 'vue'
 import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import ShieldCheck from '~icons/lucide/shield-check'
 import SlaConfig from './Sla/SlaConfig.vue'
+import SmartLeadsSettings from '@/tbo/smartLeads/SmartLeadsSettings.vue'
+import { useSmartLeadsAccess } from '@/tbo/smartLeads/api'
+import LucidePhoneCall from '~icons/lucide/phone-call'
 
-const { isManager, getUser } = usersStore()
+const { isManager, isAdmin, getUser } = usersStore()
+// TBO: the page needs tbo_smart; without it the access call fails and it hides
+const { access: smartLeadsAccess } = useSmartLeadsAccess()
 
 const user = computed(() => getUser() || {})
 
@@ -252,6 +257,18 @@ const tabs = computed(() => {
           condition: () => isManager(),
         },
       ],
+    },
+    // TBO: AI providers and smart lead switches (docs/tbo-smart-leads.md)
+    {
+      label: __('TBO'),
+      items: [
+        {
+          label: __('TBO smart leads'),
+          icon: markRaw(LucidePhoneCall),
+          component: markRaw(SmartLeadsSettings),
+        },
+      ],
+      condition: () => isAdmin() && Boolean(smartLeadsAccess.value),
     },
   ]
 
