@@ -206,6 +206,7 @@ import WebsiteIcon from '@/components/Icons/WebsiteIcon.vue'
 import { getNavigationItems } from '@/utils/navigation'
 import { tboNavigationItems } from '@/tbo/quotationApprovals/navigation'
 import { tboFinanceNavigationItems } from '@/tbo/finance/navigation'
+import { tboSmartLeadsNavigationItems } from '@/tbo/smartLeads/navigation'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
@@ -283,9 +284,11 @@ const isFCSite = ref(window.is_fc_site)
 const isDemoSite = ref(window.is_demo_site)
 
 // TBO: tboNavigationItems adds Approvals for approvers (docs/tbo-quotation-approvals.md),
-// tboFinanceNavigationItems the BDE conversion report (docs/tbo-finance.md)
+// tboFinanceNavigationItems the BDE conversion report (docs/tbo-finance.md),
+// tboSmartLeadsNavigationItems Call today (docs/tbo-smart-leads.md)
 const links = computed(() => [
   ...getNavigationItems({ mobile: props.mobile }),
+  ...tboSmartLeadsNavigationItems(),
   ...tboNavigationItems(),
   ...tboFinanceNavigationItems(),
 ])

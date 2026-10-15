@@ -74,6 +74,13 @@
     >
       <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
+          <!-- TBO: score, brief, note box (docs/tbo-smart-leads.md) -->
+          <LeadSmartPanel
+            :lead="leadId"
+            :lead-name="doc.lead_name"
+            :status="doc.status"
+            @changed="onSmartLeadChanged"
+          />
           <SLASection
             v-if="doc.sla_status"
             v-model="doc"
@@ -151,6 +158,7 @@ import Activities from '@/components/Activities/Activities.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
+import LeadSmartPanel from '@/tbo/smartLeads/LeadSmartPanel.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations, isTranslatable } from '@/utils'
 import { getView } from '@/utils/view'
@@ -430,5 +438,11 @@ function reloadAssignees(data) {
   if (Object.hasOwn(data ?? {}, 'lead_owner')) {
     assignees.reload()
   }
+}
+
+// TBO: a note, status or follow-up saved from the smart lead panel
+function onSmartLeadChanged() {
+  document.reload()
+  reload.value = true
 }
 </script>

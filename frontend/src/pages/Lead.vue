@@ -185,6 +185,14 @@
           </div>
         </template>
       </FileUploader>
+      <!-- TBO: score, brief, note box (docs/tbo-smart-leads.md) -->
+      <LeadSmartPanel
+        :lead="leadId"
+        :lead-name="title"
+        :status="doc.status"
+        class="max-h-[55vh] overflow-y-auto"
+        @changed="onSmartLeadChanged"
+      />
       <SLASection
         v-if="doc.sla_status"
         v-model="doc"
@@ -268,6 +276,7 @@ import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
+import LeadSmartPanel from '@/tbo/smartLeads/LeadSmartPanel.vue'
 import {
   openWebsite,
   setupCustomizations,
@@ -702,5 +711,11 @@ function reloadResources(data) {
   ) {
     sections.reload()
   }
+}
+
+// TBO: a note, status or follow-up saved from the smart lead panel
+function onSmartLeadChanged() {
+  document.reload()
+  reload.value = true
 }
 </script>
