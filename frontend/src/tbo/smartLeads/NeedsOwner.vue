@@ -33,6 +33,14 @@
     />
 
     <template v-else-if="rows.data">
+      <p
+        v-if="people.error"
+        role="alert"
+        class="flex flex-wrap items-center gap-2 text-p-sm text-danger"
+      >
+        {{ __('Could not load the salespeople: {0}', [errorMessage(people.error)]) }}
+        <Button size="sm" :label="__('Try again')" @click="load(people)" />
+      </p>
       <div
         class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-3 sm:flex-row sm:items-end"
       >

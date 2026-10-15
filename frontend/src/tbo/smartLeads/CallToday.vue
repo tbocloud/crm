@@ -344,6 +344,9 @@ const peopleOptions = computed(() =>
 function reload() {
   if (!access.value?.scoring) return
   const params = { user: person.value || null }
+  // a slower answer for the previous salesperson must not replace this one
+  list.abort()
+  summary.abort()
   load(list, params)
   if (access.value?.follow_ups) load(summary, params)
 }

@@ -326,7 +326,7 @@
 <script setup>
 import Link from '@/components/Controls/Link.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
-import { Button, FormControl, createResource, toast } from 'frappe-ui'
+import { Button, FormControl, call, createResource, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import LucideCircleAlert from '~icons/lucide/circle-alert'
 import LucideCircleCheck from '~icons/lucide/circle-check'
@@ -384,7 +384,8 @@ const secrets = reactive({
   teams_dm_workflow_url: null,
 })
 const secretState = computed(() => resource.data?.secrets || {})
-const status = computed(() => resource.data?.status)
+const liveStatus = ref(null)
+const status = computed(() => liveStatus.value || resource.data?.status)
 const saving = ref(false)
 const saveError = ref('')
 const testing = ref('')
@@ -400,6 +401,7 @@ watch(
     for (const field of SWITCHES) values[field] = Boolean(values[field])
     form.value = values
     saved.value = JSON.stringify(values)
+    liveStatus.value = null
     for (const key of Object.keys(secrets)) secrets[key] = null
   },
   { immediate: true },
@@ -434,7 +436,8 @@ async function test(slot) {
   testing.value = slot
   try {
     tests[slot] = await testConnection(slot)
-    load(resource)
+    // only the provider states: reloading the form would drop edits made meanwhile
+    liveStatus.value = (await call(methods.settings)).status
   } catch (e) {
     tests[slot] = { ok: false, message: errorMessage(e) }
   } finally {

@@ -319,7 +319,10 @@ onBeforeUnmount(() => clearInterval(timer))
 async function start() {
   starting.value = true
   try {
-    run.data = await startTriage()
+    const nextRun = await startTriage()
+    run.data = nextRun
+    // a selection belongs to the run it was made in
+    toClose.value = []
   } catch (e) {
     toast.error(errorMessage(e))
   } finally {

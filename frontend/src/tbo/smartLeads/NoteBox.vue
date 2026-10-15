@@ -195,6 +195,7 @@ const dateError = computed(() =>
 )
 
 async function onSubmit() {
+  if (busy.value) return
   if (draft.value) return confirm()
   if (!props.ai) return saveAsWritten()
   busy.value = true
@@ -228,6 +229,7 @@ function confirm() {
 }
 
 async function write(payload) {
+  if (busy.value) return
   busy.value = true
   error.value = ''
   try {

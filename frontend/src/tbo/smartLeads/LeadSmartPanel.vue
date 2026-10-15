@@ -188,6 +188,8 @@ const showFollowUp = ref(false)
 
 function reload() {
   if (!enabled.value) return
+  // a save that also changes the status asks twice; keep the latest
+  insight.abort()
   return load(insight, { lead: props.lead })
 }
 
@@ -208,6 +210,8 @@ watch(
 )
 
 async function refresh() {
+  // one brief at a time: each one is a paid AI call
+  if (briefLoading.value) return
   briefLoading.value = true
   briefError.value = ''
   try {
