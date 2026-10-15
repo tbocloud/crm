@@ -209,17 +209,25 @@ watch(
   },
 )
 
+// One brief at a time per lead (each is a paid AI call). An answer for a lead the page has
+// moved away from is dropped; the new lead's brief is asked for on its own.
+let briefFor = null
 async function refresh() {
-  // one brief at a time: each one is a paid AI call
-  if (briefLoading.value) return
+  const lead = props.lead
+  if (briefFor === lead) return
+  briefFor = lead
   briefLoading.value = true
   briefError.value = ''
   try {
-    brief.value = await refreshBrief(props.lead)
+    const result = await refreshBrief(lead)
+    if (lead === props.lead) brief.value = result
   } catch (e) {
-    briefError.value = errorMessage(e)
+    if (lead === props.lead) briefError.value = errorMessage(e)
   } finally {
-    briefLoading.value = false
+    if (briefFor === lead) {
+      briefFor = null
+      briefLoading.value = false
+    }
   }
 }
 
