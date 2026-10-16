@@ -50,7 +50,9 @@
         v-if="document.actions?.length"
         :actions="document.actions"
       />
+      <!-- TBO: with the lead pipeline on, the deal comes from Closed – Won (docs/tbo-lead-pipeline.md) -->
       <Tooltip
+        v-if="!tboConversionLocked"
         :disabled="!isLeadConversionDisabled"
         :text="__('Cannot convert a lost lead to deal')"
       >
@@ -74,6 +76,8 @@
     >
       <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
+          <!-- TBO: meetings summary and follow-up flag (docs/tbo-lead-pipeline.md) -->
+          <LeadPipelineSummary :lead="leadId" :status="doc.status" />
           <!-- TBO: score, brief, note box (docs/tbo-smart-leads.md) -->
           <LeadSmartPanel
             :lead="leadId"
@@ -159,6 +163,12 @@ import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import LeadSmartPanel from '@/tbo/smartLeads/LeadSmartPanel.vue'
+import LeadPipelineSummary from '@/tbo/leadPipeline/LeadPipelineSummary.vue'
+import {
+  leadMeetingsTab,
+  useConversionLock,
+} from '@/tbo/leadPipeline/navigation'
+import LucideCalendarDays from '~icons/lucide/calendar-days'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations, isTranslatable } from '@/utils'
 import { getView } from '@/utils/view'
@@ -211,6 +221,7 @@ const {
 } = useDocument('CRM Lead', props.leadId)
 
 const doc = computed(() => document.doc || {})
+const tboConversionLocked = useConversionLock()
 const isLeadConversionDisabled = computed(
   () => doc.value.status && getLeadStatus(doc.value.status)?.type === 'Lost',
 )
@@ -314,6 +325,8 @@ const tabs = computed(() => {
       label: __('Activity'),
       icon: ActivityIcon,
     },
+    // TBO: meetings and minutes (docs/tbo-lead-pipeline.md)
+    leadMeetingsTab({ icon: LucideCalendarDays }),
     {
       name: 'Emails',
       label: __('Emails'),

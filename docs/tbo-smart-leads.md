@@ -23,7 +23,7 @@ while follow-ups or the triage are on).
   **Follow-up**; **Status**.
   - **Log call** opens the note box in a dialog, set to a call.
   - **WhatsApp** opens the draft dialog when AI notes are on, else `wa.me` directly.
-  - **Status** changes the status at once; Junk and Unqualified get CRM's lost reason "Other".
+  - **Status** changes the status at once; Closed – Lost gets CRM's lost reason "Other".
 - A **Salesperson** select when the user may open other lists (team leads, sales heads,
   managers); the server refuses anyone else's.
 - A follow-up summary line ("2 overdue · 5 due today · 40 no follow-up") while follow-ups are on.
@@ -33,7 +33,7 @@ while follow-ups or the triage are on).
 - **Triage** tab (Sales Manager / System Manager, triage on): **Run a preview**, the run's
   status (polled every 4 s while it runs), counts and AI cost; **Call again** with the planned
   date and person, **Create N follow-ups** (with a confirmation); **Suggest close** with
-  checkboxes, **Close as Junk / Unqualified** and a confirmation. Nothing is closed unless a
+  checkboxes, **Close as Closed – Lost** and a confirmation. Nothing is closed unless a
   person ticks it and confirms.
 - States: loading, switched off, not permitted (403), error with *Try again*, nothing to call.
 

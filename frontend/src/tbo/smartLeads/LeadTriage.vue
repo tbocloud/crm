@@ -146,15 +146,6 @@
               }}</span>
             </h3>
             <div class="flex items-center gap-2">
-              <FormControl
-                v-model="closeStatus"
-                type="select"
-                :aria-label="__('Close as')"
-                :options="[
-                  { label: __('Close as Junk'), value: 'Junk' },
-                  { label: __('Close as Unqualified'), value: 'Unqualified' },
-                ]"
-              />
               <Button
                 :label="__('Close {0} selected', [toClose.length])"
                 :disabled="!toClose.length"
@@ -264,7 +255,7 @@
 <script setup>
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import StateMessage from '@/tbo/quotationApprovals/StateMessage.vue'
-import { Button, Dialog, FormControl, createResource, toast } from 'frappe-ui'
+import { Button, Dialog, createResource, toast } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import LucideCircleAlert from '~icons/lucide/circle-alert'
 import LucideCircleCheck from '~icons/lucide/circle-check'
@@ -300,7 +291,8 @@ const applying = ref(false)
 const closing = ref(false)
 const confirmApply = ref(false)
 const confirmClose = ref(false)
-const closeStatus = ref('Junk')
+// the lead pipeline's one closing status (docs/tbo-lead-pipeline.md)
+const closeStatus = 'Closed – Lost'
 const toClose = ref([])
 
 function reload() {
@@ -350,7 +342,7 @@ async function closeLeads() {
     const result = await closeTriageLeads(
       data.value.name,
       toClose.value,
-      closeStatus.value,
+      closeStatus,
     )
     run.data = result.run
     toast.success(__('{0} leads closed', [result.closed.length]))
