@@ -95,6 +95,8 @@ import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import ShieldCheck from '~icons/lucide/shield-check'
 import SlaConfig from './Sla/SlaConfig.vue'
 import SmartLeadsSettings from '@/tbo/smartLeads/SmartLeadsSettings.vue'
+import PipelineSettings from '@/tbo/leadPipeline/PipelineSettings.vue'
+import LucideCalendarDays from '~icons/lucide/calendar-days'
 import { useSmartLeadsAccess } from '@/tbo/smartLeads/api'
 import LucidePhoneCall from '~icons/lucide/phone-call'
 
@@ -266,6 +268,11 @@ const tabs = computed(() => {
           label: __('TBO smart leads'),
           icon: markRaw(LucidePhoneCall),
           component: markRaw(SmartLeadsSettings),
+        },
+        {
+          label: __('Lead pipeline'),
+          icon: markRaw(LucideCalendarDays),
+          component: markRaw(PipelineSettings),
         },
       ],
       condition: () => isAdmin() && Boolean(smartLeadsAccess.value),
