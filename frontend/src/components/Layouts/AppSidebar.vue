@@ -207,6 +207,7 @@ import { getNavigationItems } from '@/utils/navigation'
 import { tboNavigationItems } from '@/tbo/quotationApprovals/navigation'
 import { tboFinanceNavigationItems } from '@/tbo/finance/navigation'
 import { tboSmartLeadsNavigationItems } from '@/tbo/smartLeads/navigation'
+import { tboPipelineNavigationItems } from '@/tbo/leadPipeline/navigation'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
@@ -285,10 +286,12 @@ const isDemoSite = ref(window.is_demo_site)
 
 // TBO: tboNavigationItems adds Approvals for approvers (docs/tbo-quotation-approvals.md),
 // tboFinanceNavigationItems the BDE conversion report (docs/tbo-finance.md),
-// tboSmartLeadsNavigationItems Call today (docs/tbo-smart-leads.md)
+// tboSmartLeadsNavigationItems Call today (docs/tbo-smart-leads.md),
+// tboPipelineNavigationItems the Pipeline dashboard (docs/tbo-lead-pipeline.md)
 const links = computed(() => [
   ...getNavigationItems({ mobile: props.mobile }),
   ...tboSmartLeadsNavigationItems(),
+  ...tboPipelineNavigationItems(),
   ...tboNavigationItems(),
   ...tboFinanceNavigationItems(),
 ])

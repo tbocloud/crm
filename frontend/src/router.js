@@ -129,6 +129,12 @@ const routes = [
     name: 'Allocations',
     component: () => import('@/tbo/finance/Allocations.vue'),
   },
+  // TBO: lead pipeline dashboard (docs/tbo-lead-pipeline.md)
+  {
+    path: '/pipeline',
+    name: 'Pipeline',
+    component: () => import('@/tbo/leadPipeline/PipelineDashboard.vue'),
+  },
   // TBO: smart leads (docs/tbo-smart-leads.md)
   {
     path: '/call-today',

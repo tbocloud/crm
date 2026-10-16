@@ -3,6 +3,8 @@ import {
   linkLabel,
   meetingActions,
   meetingTone,
+  monthStart,
+  PIPELINE_STATUSES,
   reminderMinutes,
   mergeDraft,
   momPayload,
@@ -323,5 +325,16 @@ describe('quotations', () => {
     expect(urls.pdf).toContain(
       'download_pdf?doctype=Quotation&name=SAL-QTN-2026-00001',
     )
+  })
+})
+
+describe('dashboard helpers', () => {
+  it('starts the range on the first of the month', () => {
+    expect(monthStart(new Date(2026, 9, 16))).toBe('2026-10-01')
+  })
+  it('lists the 13 pipeline statuses in order', () => {
+    expect(PIPELINE_STATUSES).toHaveLength(13)
+    expect(PIPELINE_STATUSES[0]).toBe('New Lead')
+    expect(PIPELINE_STATUSES.at(-1)).toBe('Closed – Lost')
   })
 })

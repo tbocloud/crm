@@ -151,6 +151,36 @@ export const savePackage = (values) =>
 export const setServiceRate = (item_code, rate) =>
   call(leadQuotationMethods.setRate, { item_code, rate })
 
+// The Pipeline dashboard (tbo_smart.api.lead_pipeline_dashboard)
+const DASHBOARD_API = 'tbo_smart.api.lead_pipeline_dashboard'
+export const dashboardMethods = {
+  access: `${DASHBOARD_API}.get_access`,
+  dashboard: `${DASHBOARD_API}.get_pipeline_dashboard`,
+}
+
+let dashboardAccessResource
+
+export function usePipelineDashboardAccess() {
+  if (!dashboardAccessResource) {
+    dashboardAccessResource = createResource({
+      url: dashboardMethods.access,
+      cache: 'tbo-pipeline-dashboard-access',
+    })
+    load(dashboardAccessResource)
+  }
+  return {
+    resource: dashboardAccessResource,
+    enabled: computed(() =>
+      Boolean(
+        !dashboardAccessResource.error && dashboardAccessResource.data?.enabled,
+      ),
+    ),
+  }
+}
+
+export const refreshDashboardAccess = () =>
+  dashboardAccessResource && load(dashboardAccessResource)
+
 // Reload when tbo_smart says the lead's meetings changed, and on focus.
 export function useLeadPipelineRefresh(lead, reload) {
   const { $socket } = globalStore()
