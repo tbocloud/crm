@@ -61,6 +61,9 @@
           v-model="form.meeting_reminder_minutes"
           class="max-w-xs"
           type="number"
+          min="15"
+          max="1440"
+          step="1"
           :label="__('Meeting reminder (minutes before)')"
           :description="
             __(
@@ -85,6 +88,7 @@ import {
   refreshAccess,
   savePipelineSettings,
 } from './api'
+import { reminderMinutes } from './pipeline'
 
 const SWITCHES = ['enable_lead_pipeline']
 const resource = createResource({ url: methods.settings })
@@ -116,6 +120,15 @@ async function save() {
   try {
     const values = { ...form.value }
     for (const field of SWITCHES) values[field] = values[field] ? 1 : 0
+    values.meeting_reminder_minutes = reminderMinutes(
+      values.meeting_reminder_minutes,
+    )
+    if (values.meeting_reminder_minutes === null) {
+      saveError.value = __(
+        'The meeting reminder must be between 15 and 1,440 minutes.',
+      )
+      return
+    }
     resource.data = await savePipelineSettings(values)
     refreshAccess()
     toast.success(__('Saved'))

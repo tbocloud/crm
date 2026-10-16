@@ -457,7 +457,7 @@ function leadCommands() {
     ...communicationCommands(),
   ]
   commands.push(...scriptCommands())
-  if (!isLeadConversionDisabled.value)
+  if (!isLeadConversionDisabled.value && !tboConversionLocked.value)
     commands.push({
       id: 'lead-convert',
       title: 'Convert to deal',

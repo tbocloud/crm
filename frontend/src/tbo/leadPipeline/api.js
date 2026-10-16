@@ -27,14 +27,26 @@ export const methods = {
 }
 
 let accessResource
+let lastAccessAttempt = 0
+const ACCESS_RETRY_MS = 30000
 
 // Whether the pipeline is on; one shared resource for the lead page and tabs.
+// A failed check (network, deploy in progress) is retried by the next screen
+// that asks, at most every 30 s, as the finance access does.
 export function useLeadPipelineAccess() {
   if (!accessResource) {
     accessResource = createResource({
       url: methods.access,
       cache: 'tbo-lead-pipeline-access',
     })
+    lastAccessAttempt = Date.now()
+    load(accessResource)
+  } else if (
+    accessResource.error &&
+    !accessResource.loading &&
+    Date.now() - lastAccessAttempt > ACCESS_RETRY_MS
+  ) {
+    lastAccessAttempt = Date.now()
     load(accessResource)
   }
   const access = computed(() =>

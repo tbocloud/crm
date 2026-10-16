@@ -117,6 +117,14 @@ export function schedulePayload(values) {
   }
 }
 
+// The settings page's reminder minutes: a whole number from 15 to 1,440.
+export function reminderMinutes(value) {
+  const minutes = Number(value)
+  return Number.isInteger(minutes) && minutes >= 15 && minutes <= 1440
+    ? minutes
+    : null
+}
+
 export const MOM_TEXT_FIELDS = [
   'agenda',
   'discussion_points',

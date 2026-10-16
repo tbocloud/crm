@@ -138,6 +138,7 @@
               <Button
                 size="sm"
                 variant="ghost"
+                :disabled="busy"
                 :aria-label="__('More actions for {0}', [meeting.stage_label])"
               >
                 <template #icon><LucideEllipsis class="size-4" /></template>
@@ -230,6 +231,8 @@
             variant="solid"
             theme="red"
             :label="__('Cancel meeting')"
+            :loading="busy"
+            :disabled="busy"
             @click="cancelMeeting"
           />
         </div>
@@ -320,19 +323,25 @@ function onSaved() {
   leadDocument.reload()
 }
 
+// one status change at a time, until its reload has finished
+const busy = ref(false)
 async function setStatus(meeting, status) {
+  if (busy.value) return
+  busy.value = true
   try {
     await setMeetingStatus(meeting.name, status)
     toast.success(__('{0}: {1}', [meeting.stage_label, __(status)]))
-    reload()
+    await reload()
   } catch (e) {
     toast.error(errorMessage(e))
+  } finally {
+    busy.value = false
   }
 }
 
-function cancelMeeting() {
+async function cancelMeeting() {
+  await setStatus(cancelling.value, 'Cancelled')
   confirmCancel.value = false
-  setStatus(cancelling.value, 'Cancelled')
 }
 
 function menu(meeting) {

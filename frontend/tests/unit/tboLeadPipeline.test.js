@@ -3,6 +3,7 @@ import {
   linkLabel,
   meetingActions,
   meetingTone,
+  reminderMinutes,
   mergeDraft,
   momPayload,
   schedulePayload,
@@ -68,6 +69,16 @@ describe('linkLabel', () => {
     )
     expect(linkLabel('https://www.zoom.us/j/1')).toBe('zoom.us')
     expect(linkLabel('not a link')).toBe('')
+  })
+})
+
+describe('reminderMinutes', () => {
+  it('takes whole minutes from 15 to 1,440', () => {
+    expect(reminderMinutes('60')).toBe(60)
+    expect(reminderMinutes(15)).toBe(15)
+    expect(reminderMinutes('')).toBeNull()
+    expect(reminderMinutes(10)).toBeNull()
+    expect(reminderMinutes(30.5)).toBeNull()
   })
 })
 
