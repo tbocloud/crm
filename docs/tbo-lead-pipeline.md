@@ -92,6 +92,26 @@ follow-up days (3; 0 for none). **Status dialog:** a note; Rejected asks why and
 lead as Closed – Lost with a reason; Accepted says the deal will be created. **Revision history:**
 each version with its total, discount, validity and what changed from the one before.
 
+**Pipeline** (`/crm/pipeline`, sidebar, behind **Pipeline dashboard**):
+
+- Filters in one row: from, to (this month by default), BDE (the people you may see; one choice
+  for a salesperson), source and status.
+- Six headline numbers: leads created, meetings held, upcoming meetings, overdue follow-ups, win
+  rate and lead → won.
+- **Leads by status** as plain neutral bars with the counts (created in the range, pipeline
+  order); **meetings completed** 1st / 2nd / 3rd / additional; **won and lost** with the lost
+  reasons (green and red with an icon and text).
+- **Upcoming meetings**, **MOM pending** and **High potential** lists, each linking to the lead.
+- **By BDE** table: meetings held, MOM rate, MOM pending (red when not zero), quotations made and
+  sent, won. It scrolls sideways at 390px.
+- **Quotations**: made, total value, pending approval, with the client, accepted / rejected and the
+  active value, plus a chip per status.
+- A salesperson sees their own leads, a team lead the team, managers everyone; the header line
+  says which. States: switched off, loading, error with *Try again*, empty lists.
+
+The CRM dashboard also gets **Meetings held**, **MOM pending**, **Lead win rate** and **Active
+quotations** cards from tbo_smart's `crm_dashboard_layout` hook (no CRM change).
+
 **Settings → TBO → Lead pipeline** (System Managers): the switches, the reminder minutes, the
 quotation defaults (validity, follow-up days, terms, payment terms, print format, the roles that
 edit prices) and, once quotations are on, the **Quotation catalogue**: packages (New package /
@@ -115,7 +135,8 @@ Unqualified choice).
 | `frontend/src/tbo/finance/QuotationDialog.vue`, `TotalsBlock.vue` | The shared quotation dialog (deal and lead) and its totals. |
 | `frontend/src/tbo/leadPipeline/LeadPipelineSummary.vue` | The side panel summary and the follow-up flag. |
 | `frontend/src/tbo/leadPipeline/PipelineSettings.vue` | The settings page. |
-| `frontend/src/tbo/leadPipeline/navigation.js` | `leadMeetingsTab()`, `leadQuotationsTab()` and `useConversionLock()`. |
+| `frontend/src/tbo/leadPipeline/PipelineDashboard.vue` | The Pipeline page. |
+| `frontend/src/tbo/leadPipeline/navigation.js` | `leadMeetingsTab()`, `leadQuotationsTab()`, `useConversionLock()` and `tboPipelineNavigationItems()` (sidebar: Pipeline). |
 
 Small hooks into upstream files:
 
@@ -125,6 +146,8 @@ Small hooks into upstream files:
 | `frontend/src/components/Activities/Activities.vue` | `<LeadMeetings v-else-if="title == 'Meetings'">` after `DealFinance`; the stock `QuotationsList` only for `CRM Deal`, and `<LeadQuotations>` for the lead's Quotations tab. |
 | `frontend/src/components/Activities/ActivityHeader.vue` | No "New" menu on the Meetings tab. |
 | `frontend/src/components/Settings/Settings.vue` | **Lead pipeline** in the TBO group. |
+| `frontend/src/components/Layouts/AppSidebar.vue` | `...tboPipelineNavigationItems()` in `links`. |
+| `frontend/src/router.js` | The `/pipeline` route (`Pipeline`). |
 
 On an upstream merge conflict in one of these, keep upstream's change and add the hook back.
 
