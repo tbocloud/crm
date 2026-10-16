@@ -11,6 +11,7 @@ import {
   localToday,
   quotationNetTotal,
   quotationPayload,
+  quotationTotals,
   sortRows,
   stageSteps,
   statusTone,
@@ -154,6 +155,47 @@ describe('quotationPayload', () => {
         },
       ],
     })
+  })
+})
+
+describe('quotationPayload for the lead builder', () => {
+  it('adds the optional fields and line descriptions it has', () => {
+    const payload = quotationPayload({
+      company: 'TBO India',
+      tc_name: 'Standard',
+      payment_terms_template: '',
+      package: 'ERP Starter',
+      items: [
+        {
+          item_code: 'SVC',
+          qty: 1,
+          price_list_rate: 5,
+          description: ' Setup ',
+        },
+      ],
+    })
+    expect(payload.tc_name).toBe('Standard')
+    expect(payload.payment_terms_template).toBeNull()
+    expect(payload.package).toBe('ERP Starter')
+    expect('meeting' in payload).toBe(false)
+    expect(payload.items[0].description).toBe('Setup')
+  })
+})
+
+describe('quotationTotals', () => {
+  it('takes the discount off the net and adds the tax', () => {
+    const items = [
+      { qty: 1, price_list_rate: 50000, discount_percentage: 0 },
+      { qty: 2, price_list_rate: 10000, discount_percentage: 0 },
+    ]
+    expect(quotationTotals(items, 10, 18)).toEqual({
+      subtotal: 70000,
+      discount: 7000,
+      net: 63000,
+      tax: 11340,
+      grand: 74340,
+    })
+    expect(quotationTotals([], 0, 0).grand).toBe(0)
   })
 })
 

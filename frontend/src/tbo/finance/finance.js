@@ -61,9 +61,18 @@ export function validateQuotation(form, today) {
   return errors
 }
 
+// Optional fields the dialog sends only when the form has them (the lead's
+// builder: presets, payment terms, terms template, the meeting).
+const OPTIONAL_FIELDS = [
+  'tc_name',
+  'payment_terms_template',
+  'package',
+  'meeting',
+]
+
 // The values save_quotation takes, from the dialog's form.
 export function quotationPayload(form) {
-  return {
+  const payload = {
     company: form.company,
     valid_till: form.valid_till || null,
     taxes_and_charges: form.taxes_and_charges || null,
@@ -71,12 +80,38 @@ export function quotationPayload(form) {
       Number(form.additional_discount_percentage) || 0,
     commission: Number(form.commission) || 0,
     terms: form.terms || null,
-    items: form.items.map((row) => ({
-      item_code: row.item_code,
-      qty: Number(row.qty) || 0,
-      price_list_rate: Number(row.price_list_rate) || 0,
-      discount_percentage: Number(row.discount_percentage) || 0,
-    })),
+    items: form.items.map((row) => {
+      const line = {
+        item_code: row.item_code,
+        qty: Number(row.qty) || 0,
+        price_list_rate: Number(row.price_list_rate) || 0,
+        discount_percentage: Number(row.discount_percentage) || 0,
+      }
+      if (row.description !== undefined)
+        line.description = (row.description || '').trim() || null
+      return line
+    }),
+  }
+  for (const field of OPTIONAL_FIELDS)
+    if (field in form) payload[field] = form[field] || null
+  return payload
+}
+
+// Subtotal, discount, tax and grand total for the dialog, as ERPNext computes
+// them with the discount on the net total. `taxRate` is the template's total %
+// on the net total; the saved quotation's own figures are the real ones.
+export function quotationTotals(items, additionalDiscount = 0, taxRate = 0) {
+  const subtotal = round2(
+    items.reduce((sum, row) => sum + lineAmounts(row).amount, 0),
+  )
+  const net = quotationNetTotal(items, additionalDiscount)
+  const tax = round2((net * (Number(taxRate) || 0)) / 100)
+  return {
+    subtotal,
+    discount: round2(subtotal - net),
+    net,
+    tax,
+    grand: round2(net + tax),
   }
 }
 
