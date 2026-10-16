@@ -169,7 +169,8 @@ watch(open, (isOpen) => {
     project_duration: p?.project_duration || '',
     validity_days: p?.validity_days || '',
     description: p?.description || '',
-    enabled: true,
+    // a new package is offered; an edited one keeps its own setting
+    enabled: p ? Boolean(p.enabled ?? 1) : true,
     items: (p?.items || []).map((row) => ({ ...row, key: ++rowKey })),
   }
   if (!form.value.items.length) addLine()

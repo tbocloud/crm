@@ -97,6 +97,20 @@ export function quotationPayload(form) {
   return payload
 }
 
+// The discount the approval limits judge (tbo_smart quotation_control): the
+// net total's distance from the list value, so line and header discounts count.
+export function quotationDiscountPercent(items, additionalDiscount = 0) {
+  const list = items.reduce(
+    (sum, row) =>
+      sum + (Number(row.qty) || 0) * (Number(row.price_list_rate) || 0),
+    0,
+  )
+  if (!list) return 0
+  return round2(
+    ((list - quotationNetTotal(items, additionalDiscount)) / list) * 100,
+  )
+}
+
 // Subtotal, discount, tax and grand total for the dialog, as ERPNext computes
 // them with the discount on the net total. `taxRate` is the template's total %
 // on the net total; the saved quotation's own figures are the real ones.

@@ -11,6 +11,7 @@ import {
   localToday,
   quotationNetTotal,
   quotationPayload,
+  quotationDiscountPercent,
   quotationTotals,
   sortRows,
   stageSteps,
@@ -179,6 +180,15 @@ describe('quotationPayload for the lead builder', () => {
     expect(payload.package).toBe('ERP Starter')
     expect('meeting' in payload).toBe(false)
     expect(payload.items[0].description).toBe('Setup')
+  })
+})
+
+describe('quotationDiscountPercent', () => {
+  it('counts line and header discounts against the list value', () => {
+    const items = [{ qty: 2, price_list_rate: 100, discount_percentage: 10 }]
+    expect(quotationDiscountPercent(items, 0)).toBe(10)
+    expect(quotationDiscountPercent(items, 10)).toBe(19)
+    expect(quotationDiscountPercent([], 5)).toBe(0)
   })
 })
 

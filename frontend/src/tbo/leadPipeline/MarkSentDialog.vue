@@ -120,6 +120,9 @@ watch(open, (isOpen) => {
 async function save() {
   saving.value = true
   error.value = ''
+  // opened during the click, so popup blockers allow it; pointed at WhatsApp below
+  const popup = via.value === 'WhatsApp' ? window.open('', '_blank') : null
+  if (popup) popup.opener = null
   try {
     const result = await markQuotationSent({
       quotation: props.quotation,
@@ -128,12 +131,13 @@ async function save() {
       message: message.value.trim() || null,
       follow_up_days: Math.max(0, Math.round(Number(followUpDays.value) || 0)),
     })
-    if (result.whatsapp_url)
-      window.open(result.whatsapp_url, '_blank', 'noopener')
+    if (popup && result.whatsapp_url) popup.location.href = result.whatsapp_url
+    else popup?.close()
     toast.success(__('{0} is with the client', [props.quotation]))
     emit('saved', result)
     open.value = false
   } catch (e) {
+    popup?.close()
     error.value = errorMessage(e)
   } finally {
     saving.value = false

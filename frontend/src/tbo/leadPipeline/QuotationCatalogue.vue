@@ -55,6 +55,11 @@
           <div class="min-w-0">
             <div class="text-base font-medium text-ink-gray-9">
               {{ row.package_name }}
+              <span
+                v-if="row.enabled === 0"
+                class="ml-1 text-xs font-normal text-ink-gray-5"
+                >{{ __('Not offered') }}</span
+              >
             </div>
             <div class="text-p-sm text-ink-gray-6">
               {{

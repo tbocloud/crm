@@ -129,6 +129,7 @@
                 size="sm"
                 :label="__('Convert to Sales Order')"
                 :loading="busy === row.name"
+                :disabled="Boolean(busy)"
                 @click="toSalesOrder(row)"
               />
               <Dropdown :options="menu(row, family)">
@@ -281,7 +282,9 @@ function onMoved() {
   leadDocument.reload()
 }
 
+// one request at a time (a second Create revision would make two revisions)
 async function run(row, action, message) {
+  if (busy.value) return
   busy.value = row.name
   try {
     const result = await action()

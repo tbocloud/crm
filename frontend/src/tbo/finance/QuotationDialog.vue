@@ -429,6 +429,7 @@ import {
   lineAmounts,
   localToday,
   quotationPayload,
+  quotationDiscountPercent,
   quotationTotals,
   validateQuotation,
 } from './finance'
@@ -514,10 +515,12 @@ const termsOptions = computed(() => [
 ])
 const packageOptions = computed(() => [
   { label: __('No package'), value: '' },
-  ...(catalogue.value?.packages || []).map((row) => ({
-    label: row.package_name,
-    value: row.name,
-  })),
+  ...(catalogue.value?.packages || [])
+    .filter((row) => row.enabled !== 0)
+    .map((row) => ({
+      label: row.package_name,
+      value: row.name,
+    })),
 ])
 // services grouped by category (Item Group)
 const serviceOptions = computed(() => {
@@ -571,9 +574,10 @@ const limitWarning = computed(() => {
   const access = approvalAccess.value
   const limit = access?.limits?.Discount
   if (!access?.enabled || limit === null || limit === undefined) return ''
-  const percent = totals.value.subtotal
-    ? (totals.value.discount / totals.value.subtotal) * 100
-    : 0
+  const percent = quotationDiscountPercent(
+    values.value.items,
+    values.value.additional_discount_percentage,
+  )
   return percent > limit
     ? __(
         'The discount is above your limit: request approval before you send it.',
