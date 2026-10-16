@@ -14,6 +14,12 @@
     <QuotationsList v-if="title == 'Quotations'" :deal="docname" />
     <!-- TBO: deal Finance tab (docs/tbo-finance.md) -->
     <DealFinance v-else-if="title == 'Finance'" :deal="docname" />
+    <!-- TBO: lead Meetings tab (docs/tbo-lead-pipeline.md) -->
+    <LeadMeetings
+      v-else-if="title == 'Meetings'"
+      :lead="docname"
+      :lead-name="doc.lead_name"
+    />
     <div
       v-else-if="all_activities?.loading"
       class="flex flex-1 flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-4"
@@ -449,6 +455,7 @@ import TaskArea from '@/components/Activities/TaskArea.vue'
 import AttachmentArea from '@/components/Activities/AttachmentArea.vue'
 import QuotationsList from '@/components/Activities/QuotationsList.vue'
 import DealFinance from '@/tbo/finance/DealFinance.vue'
+import LeadMeetings from '@/tbo/leadPipeline/LeadMeetings.vue'
 import DataFields from '@/components/Activities/DataFields.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
