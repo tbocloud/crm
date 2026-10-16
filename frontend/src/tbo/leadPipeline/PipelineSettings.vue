@@ -127,6 +127,18 @@
         </div>
       </section>
 
+      <section class="flex flex-col gap-4">
+        <SwitchRow
+          v-model="form.enable_pipeline_dashboard"
+          :label="__('Pipeline dashboard')"
+          :description="
+            __(
+              'The Pipeline page and the pipeline cards on the CRM dashboard. Each person sees their own leads, a team lead the team, managers everyone.',
+            )
+          "
+        />
+      </section>
+
       <QuotationCatalogue v-if="quotationsSaved" />
     </div>
   </div>
@@ -142,12 +154,18 @@ import {
   load,
   methods,
   refreshAccess,
+  refreshDashboardAccess,
+  refreshQuotationAccess,
   savePipelineSettings,
 } from './api'
 import { reminderMinutes } from './pipeline'
 import QuotationCatalogue from './QuotationCatalogue.vue'
 
-const SWITCHES = ['enable_lead_pipeline', 'enable_lead_quotations']
+const SWITCHES = [
+  'enable_lead_pipeline',
+  'enable_lead_quotations',
+  'enable_pipeline_dashboard',
+]
 const resource = createResource({ url: methods.settings })
 load(resource)
 const form = ref(null)
@@ -205,6 +223,8 @@ async function save() {
     }
     resource.data = await savePipelineSettings(values)
     refreshAccess()
+    refreshQuotationAccess()
+    refreshDashboardAccess()
     toast.success(__('Saved'))
   } catch (e) {
     saveError.value = errorMessage(e)

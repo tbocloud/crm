@@ -2,6 +2,28 @@
 // server decides and checks everything; these only shape the UI. Tested in
 // tests/unit/tboLeadPipeline.test.js.
 
+// The lead pipeline's statuses, in order (tbo_smart lead_pipeline/statuses.py).
+export const PIPELINE_STATUSES = [
+  'New Lead',
+  'Contacted',
+  'Meeting Scheduled',
+  'First Meeting Completed',
+  'Second Meeting Completed',
+  'Third Meeting Completed',
+  'Proposal Sent',
+  'Negotiation',
+  'Positive / Interested',
+  'Follow-up Required',
+  'On Hold',
+  'Closed – Won',
+  'Closed – Lost',
+]
+
+// The first day of this month, "YYYY-MM-DD", for the dashboard's default range.
+export function monthStart(now = new Date()) {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+}
+
 export const MEETING_STATUS = {
   SCHEDULED: 'Scheduled',
   IN_PROGRESS: 'Meeting in Progress',
