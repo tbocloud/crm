@@ -284,9 +284,11 @@ import LeadSmartPanel from '@/tbo/smartLeads/LeadSmartPanel.vue'
 import LeadPipelineSummary from '@/tbo/leadPipeline/LeadPipelineSummary.vue'
 import {
   leadMeetingsTab,
+  leadQuotationsTab,
   useConversionLock,
 } from '@/tbo/leadPipeline/navigation'
 import LucideCalendarDays from '~icons/lucide/calendar-days'
+import LucideFileText from '~icons/lucide/file-text'
 import {
   openWebsite,
   setupCustomizations,
@@ -586,6 +588,7 @@ const tabs = computed(() => {
     },
     // TBO: meetings and minutes (docs/tbo-lead-pipeline.md)
     leadMeetingsTab({ icon: LucideCalendarDays }),
+    leadQuotationsTab({ icon: LucideFileText }),
     {
       name: 'Emails',
       label: __('Emails'),

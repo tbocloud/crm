@@ -11,6 +11,13 @@ import {
   validateMom,
   validateSchedule,
 } from '@/tbo/leadPipeline/pipeline'
+import {
+  changeLines,
+  groupFamilies,
+  printUrls,
+  quoteActions,
+  quoteTone,
+} from '@/tbo/leadPipeline/quotes'
 
 const NOW = '2026-10-16 10:00:00'
 
@@ -225,5 +232,96 @@ describe('momPayload and mergeDraft', () => {
       'Typed row',
       'AI row',
     ])
+  })
+})
+
+describe('quotations', () => {
+  it('colours the outcome and the waiting states', () => {
+    expect(quoteTone('Accepted').tone).toBe('success')
+    expect(quoteTone('Expired').tone).toBe('danger')
+    expect(quoteTone('Pending Approval').tone).toBe('warning')
+    expect(quoteTone('Sent to Client').tone).toBe('info')
+    expect(quoteTone('Draft').tone).toBe('neutral')
+  })
+
+  it('offers sending only when nothing is pending', () => {
+    const access = { canWrite: true, canOrder: true, deal: '' }
+    expect(
+      quoteActions(
+        { docstatus: 0, tbo_quote_status: 'Draft', tbo_is_latest: 1 },
+        access,
+      ).send,
+    ).toBe(true)
+    expect(
+      quoteActions(
+        { docstatus: 0, tbo_quote_status: 'Pending Approval' },
+        access,
+      ).send,
+    ).toBe(false)
+    const sent = quoteActions(
+      { docstatus: 1, tbo_quote_status: 'Sent to Client', tbo_is_latest: 1 },
+      access,
+    )
+    expect(sent.send).toBe(false)
+    expect(sent.moves).toEqual([
+      'Viewed / Acknowledged',
+      'Under Negotiation',
+      'Revision Required',
+      'Accepted',
+      'Rejected',
+    ])
+    expect(sent.revise).toBe(true)
+    expect(sent.order).toBe(false)
+    expect(
+      quoteActions(
+        { docstatus: 1, tbo_quote_status: 'Accepted' },
+        { ...access, deal: 'D-1' },
+      ).order,
+    ).toBe(true)
+    expect(
+      quoteActions(
+        { docstatus: 1, tbo_quote_status: 'Sent to Client' },
+        { canWrite: false },
+      ).moves,
+    ).toEqual([])
+  })
+
+  it('groups revisions into families, latest first', () => {
+    const families = groupFamilies([
+      { name: 'Q-3', tbo_quote_family: 'Q-1', tbo_revision_no: 1 },
+      { name: 'Q-2', tbo_quote_family: 'Q-2', tbo_revision_no: 0 },
+      { name: 'Q-1', tbo_quote_family: 'Q-1', tbo_revision_no: 0 },
+    ])
+    expect(families.map((rows) => rows.map((row) => row.name))).toEqual([
+      ['Q-3', 'Q-1'],
+      ['Q-2'],
+    ])
+  })
+
+  it('says what changed between revisions', () => {
+    expect(
+      changeLines({
+        grand_total: [1500, 1800],
+        discount_percent: [0, 0],
+        added: ['Support'],
+        removed: [],
+        changed: [{ item_name: 'Setup', qty: [1, 2], rate: [1000, 900] }],
+        terms_changed: true,
+      }),
+    ).toEqual([
+      'Grand total 1,500 → 1,800',
+      'Added Support',
+      'Setup: qty 1 → 2, rate 1,000 → 900',
+      'Terms changed',
+    ])
+    expect(changeLines(null)).toEqual([])
+  })
+
+  it('builds the print and PDF links', () => {
+    const urls = printUrls('SAL-QTN-2026-00001')
+    expect(urls.view).toContain('format=TBO%20Quotation')
+    expect(urls.pdf).toContain(
+      'download_pdf?doctype=Quotation&name=SAL-QTN-2026-00001',
+    )
   })
 })

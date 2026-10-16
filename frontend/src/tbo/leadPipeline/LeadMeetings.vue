@@ -64,7 +64,10 @@
               <h3 class="text-base font-semibold text-ink-gray-9">
                 {{ meeting.stage_label }}
               </h3>
-              <MeetingStatusChip :status="meeting.status" />
+              <StatusChip
+                :label="meeting.status"
+                v-bind="meetingTone(meeting.status)"
+              />
             </div>
             <p
               class="flex flex-wrap items-center gap-x-3 gap-y-1 text-p-sm text-ink-gray-7"
@@ -125,7 +128,17 @@
               @click="openMom(meeting)"
             />
             <Button
-              v-else-if="meeting.status === 'MOM Submitted'"
+              v-if="
+                quotationsOn && data.can_write && meeting.status !== 'Cancelled'
+              "
+              size="sm"
+              variant="ghost"
+              :label="__('Create quotation')"
+              :iconLeft="LucideFilePlus"
+              @click="openQuotation(meeting)"
+            />
+            <Button
+              v-if="meeting.status === 'MOM Submitted'"
               size="sm"
               variant="ghost"
               :label="__('View MOM')"
@@ -210,6 +223,13 @@
       :meeting="rescheduling"
       @saved="onSaved"
     />
+    <QuotationDialog
+      v-if="quotationsOn"
+      v-model="showQuotation"
+      :lead="lead"
+      :meeting="quotationMeeting"
+      @saved="onQuotationSaved"
+    />
     <Dialog
       v-model:open="confirmCancel"
       :title="__('Cancel the {0}?', [cancelling?.stage_label])"
@@ -251,6 +271,7 @@
 <script setup>
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import { useDocument } from '@/data/document'
+import QuotationDialog from '@/tbo/finance/QuotationDialog.vue'
 import StateMessage from '@/tbo/quotationApprovals/StateMessage.vue'
 import { Button, Dialog, Dropdown, createResource, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
@@ -260,12 +281,13 @@ import LucideCalendarPlus from '~icons/lucide/calendar-plus'
 import LucideCircleAlert from '~icons/lucide/circle-alert'
 import LucideEllipsis from '~icons/lucide/ellipsis'
 import LucideExternalLink from '~icons/lucide/external-link'
+import LucideFilePlus from '~icons/lucide/file-plus'
 import LucideMapPin from '~icons/lucide/map-pin'
 import LucideNotebookPen from '~icons/lucide/notebook-pen'
 import LucideUser from '~icons/lucide/user'
 import LucideVideo from '~icons/lucide/video'
 import MeetingDialog from './MeetingDialog.vue'
-import MeetingStatusChip from './MeetingStatusChip.vue'
+import StatusChip from './StatusChip.vue'
 import MomDialog from './MomDialog.vue'
 import {
   errorMessage,
@@ -273,8 +295,15 @@ import {
   methods,
   setMeetingStatus,
   useLeadPipelineRefresh,
+  useLeadQuotationAccess,
 } from './api'
-import { isFinal, linkLabel, localNow, meetingActions } from './pipeline'
+import {
+  isFinal,
+  linkLabel,
+  localNow,
+  meetingActions,
+  meetingTone,
+} from './pipeline'
 
 const props = defineProps({
   lead: { type: String, required: true },
@@ -296,6 +325,18 @@ const rescheduling = ref(null)
 const showMom = ref(false)
 const momMeeting = ref('')
 const confirmCancel = ref(false)
+const { enabled: quotationsOn } = useLeadQuotationAccess()
+const showQuotation = ref(false)
+const quotationMeeting = ref('')
+
+function openQuotation(meeting) {
+  quotationMeeting.value = meeting.name
+  showQuotation.value = true
+}
+
+function onQuotationSaved(saved) {
+  toast.success(__('{0} is on the Quotations tab', [saved.name]))
+}
 const cancelling = ref(null)
 
 const actionsFor = (meeting) =>

@@ -88,6 +88,69 @@ export const draftMom = (meeting, notes) =>
 export const savePipelineSettings = (values) =>
   call(methods.saveSettings, { values: JSON.stringify(values) })
 
+// Quotations on the lead (tbo_smart.api.lead_quotation)
+const QUOTE_API = 'tbo_smart.api.lead_quotation'
+export const leadQuotationMethods = {
+  access: `${QUOTE_API}.get_access`,
+  list: `${QUOTE_API}.get_lead_quotations`,
+  form: `${QUOTE_API}.get_quotation_form`,
+  save: `${QUOTE_API}.save_quotation`,
+  markSent: `${QUOTE_API}.mark_sent`,
+  setStatus: `${QUOTE_API}.set_quote_status`,
+  revise: `${QUOTE_API}.create_revision`,
+  revisions: `${QUOTE_API}.get_revisions`,
+  savePdf: `${QUOTE_API}.save_pdf`,
+  salesOrder: `${QUOTE_API}.make_sales_order`,
+  catalogue: `${QUOTE_API}.get_catalogue`,
+  savePackage: `${QUOTE_API}.save_package`,
+  setRate: `${QUOTE_API}.set_service_rate`,
+}
+
+let quoteAccessResource
+
+// Whether quotations on the lead are on, and what I may do there.
+export function useLeadQuotationAccess() {
+  if (!quoteAccessResource) {
+    quoteAccessResource = createResource({
+      url: leadQuotationMethods.access,
+      cache: 'tbo-lead-quotation-access',
+    })
+    load(quoteAccessResource)
+  }
+  const access = computed(() =>
+    quoteAccessResource.error ? null : quoteAccessResource.data || null,
+  )
+  return {
+    resource: quoteAccessResource,
+    access,
+    enabled: computed(() => Boolean(access.value?.enabled)),
+  }
+}
+
+export const refreshQuotationAccess = () =>
+  quoteAccessResource && load(quoteAccessResource)
+
+export const saveLeadQuotation = (lead, values, quotation) =>
+  call(leadQuotationMethods.save, {
+    lead,
+    quotation: quotation || null,
+    values: JSON.stringify(values),
+  })
+export const markQuotationSent = (args) =>
+  call(leadQuotationMethods.markSent, args)
+export const setQuoteStatus = (args) =>
+  call(leadQuotationMethods.setStatus, args)
+export const createRevision = (quotation) =>
+  call(leadQuotationMethods.revise, { quotation })
+export const saveQuotationPdf = (quotation) =>
+  call(leadQuotationMethods.savePdf, { quotation })
+export const makeSalesOrder = (quotation) =>
+  call(leadQuotationMethods.salesOrder, { quotation })
+export const savePackage = (values) =>
+  call(leadQuotationMethods.savePackage, { values: JSON.stringify(values) })
+export const setServiceRate = (item_code, rate) =>
+  call(leadQuotationMethods.setRate, { item_code, rate })
+
 // Reload when tbo_smart says the lead's meetings changed, and on focus.
 export function useLeadPipelineRefresh(lead, reload) {
   const { $socket } = globalStore()
