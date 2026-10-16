@@ -54,7 +54,7 @@ export function meetingActions(meeting, canWrite, now = '') {
 
 // "Google Meet", "Microsoft Teams" or the link's host, for the join button.
 export function linkLabel(url) {
-  let host = ''
+  let host
   try {
     host = new URL(url).hostname.toLowerCase()
   } catch {
