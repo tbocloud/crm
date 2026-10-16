@@ -11,7 +11,12 @@
     :modalRef="modalRef"
   />
   <FadedScrollableDiv class="flex flex-col h-full overflow-y-auto">
-    <QuotationsList v-if="title == 'Quotations'" :deal="docname" />
+    <QuotationsList
+      v-if="title == 'Quotations' && doctype == 'CRM Deal'"
+      :deal="docname"
+    />
+    <!-- TBO: lead Quotations tab (docs/tbo-lead-pipeline.md) -->
+    <LeadQuotations v-else-if="title == 'Quotations'" :lead="docname" />
     <!-- TBO: deal Finance tab (docs/tbo-finance.md) -->
     <DealFinance v-else-if="title == 'Finance'" :deal="docname" />
     <!-- TBO: lead Meetings tab (docs/tbo-lead-pipeline.md) -->
@@ -456,6 +461,7 @@ import AttachmentArea from '@/components/Activities/AttachmentArea.vue'
 import QuotationsList from '@/components/Activities/QuotationsList.vue'
 import DealFinance from '@/tbo/finance/DealFinance.vue'
 import LeadMeetings from '@/tbo/leadPipeline/LeadMeetings.vue'
+import LeadQuotations from '@/tbo/leadPipeline/LeadQuotations.vue'
 import DataFields from '@/components/Activities/DataFields.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'

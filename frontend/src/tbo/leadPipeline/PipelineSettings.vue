@@ -8,7 +8,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Meetings and minutes on the lead, automatic lead statuses, and the deal made at Closed – Won. Off until you turn it on.',
+              'Meetings and minutes on the lead, automatic lead statuses, quotations on the lead, and the deal made at Closed – Won. Each is off until you turn it on.',
             )
           }}
         </p>
@@ -72,6 +72,62 @@
           "
         />
       </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="tbo-lp-quotes">
+        <h3 id="tbo-lp-quotes" class="text-base font-semibold text-ink-gray-9">
+          {{ __('Quotations on the lead') }}
+        </h3>
+        <SwitchRow
+          v-model="form.enable_lead_quotations"
+          :label="__('Quotations on the lead')"
+          :description="
+            __(
+              'Build quotations on the lead from packages and services, track them with the client, revise them and print the TBO PDF. Needs the lead pipeline.',
+            )
+          "
+        />
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormControl
+            v-model="form.quotation_validity_days"
+            type="number"
+            min="1"
+            :label="__('Quotation valid for (days)')"
+          />
+          <FormControl
+            v-model="form.quotation_follow_up_days"
+            type="number"
+            min="0"
+            :label="__('Follow up a sent quotation after (days)')"
+          />
+          <FormControl
+            v-model="form.quotation_terms"
+            type="select"
+            :label="__('Default terms and conditions')"
+            :options="choiceOptions('terms')"
+          />
+          <FormControl
+            v-model="form.quotation_payment_terms"
+            type="select"
+            :label="__('Default payment terms')"
+            :options="choiceOptions('payment_terms')"
+          />
+          <FormControl
+            v-model="form.quotation_print_format"
+            type="select"
+            :label="__('Quotation print format')"
+            :options="choiceOptions('print_formats')"
+          />
+          <FormControl
+            v-model="form.quotation_preset_roles"
+            type="textarea"
+            :rows="2"
+            :label="__('Roles that edit presets and prices')"
+            :description="__('One role per line.')"
+          />
+        </div>
+      </section>
+
+      <QuotationCatalogue v-if="quotationsSaved" />
     </div>
   </div>
 </template>
@@ -89,8 +145,9 @@ import {
   savePipelineSettings,
 } from './api'
 import { reminderMinutes } from './pipeline'
+import QuotationCatalogue from './QuotationCatalogue.vue'
 
-const SWITCHES = ['enable_lead_pipeline']
+const SWITCHES = ['enable_lead_pipeline', 'enable_lead_quotations']
 const resource = createResource({ url: methods.settings })
 load(resource)
 const form = ref(null)
@@ -110,6 +167,21 @@ watch(
   { immediate: true },
 )
 
+// the catalogue is managed once quotations are switched on and saved
+const quotationsSaved = computed(() =>
+  Boolean(resource.data?.settings?.enable_lead_quotations),
+)
+
+function choiceOptions(key) {
+  return [
+    { label: __('None'), value: '' },
+    ...(resource.data?.choices?.[key] || []).map((name) => ({
+      label: name,
+      value: name,
+    })),
+  ]
+}
+
 const dirty = computed(
   () => Boolean(form.value) && JSON.stringify(form.value) !== saved.value,
 )
@@ -120,6 +192,8 @@ async function save() {
   try {
     const values = { ...form.value }
     for (const field of SWITCHES) values[field] = values[field] ? 1 : 0
+    for (const field of ['quotation_validity_days', 'quotation_follow_up_days'])
+      values[field] = Math.max(0, Math.round(Number(values[field]) || 0))
     values.meeting_reminder_minutes = reminderMinutes(
       values.meeting_reminder_minutes,
     )
