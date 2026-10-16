@@ -61,7 +61,42 @@ done and the deal once the lead is Closed – Won.
 **Convert to Deal** is gone from the lead page while the pipeline is on: the deal is made when
 the lead becomes Closed – Won (tbo_smart also refuses a manual conversion).
 
-**Settings → TBO → Lead pipeline** (System Managers): the switch and the reminder minutes.
+**Lead → Quotations tab** (behind **Quotations on the lead** as well):
+
+- One card per quotation family, newest first: the number, *Revision N* and *Latest* when it has
+  revisions, the quote status chip (Accepted in green; Rejected and Expired in red; Pending
+  Approval and Revision Required in amber; Sent, Viewed and Under Negotiation in the info colour;
+  the rest neutral; always with an icon and the text), the grand total, valid till, when and how
+  it was sent and the package. Earlier revisions open under it.
+- Drafts show the discount/commission approval chips and **Request approval** from
+  `docs/tbo-quotation-approvals.md` (the same component as the deal).
+- Actions: **Mark sent** (the latest revision, once nothing is pending approval), **Edit**
+  (drafts), **Convert to Sales Order** (accepted, for people who may create Sales Orders; it opens
+  the deal's Finance tab), and a menu with **Preview PDF**, **Download PDF**, **Save PDF to the
+  lead**, **Create revision**, **Revision history** and the with-the-client moves (Viewed /
+  Acknowledged, Under Negotiation, Revision Required, Accepted, Rejected).
+- **New quotation** is the tab's one primary action. States: loading, error with *Try again*,
+  "No quotations yet". After the lead is won, a line says the quotations belong to the deal.
+
+**Quotation builder:** the deal's **New quotation dialog**, reused with a `lead` prop. On the
+lead it adds a **Package** pick (fills its lines, shows the project duration) and **Add a
+service** (services grouped by category, with their rate), a description under each line,
+payment terms and a terms template. The totals (subtotal, discount, tax from the template's rate,
+grand total) update as you type, on the deal too. **Review** shows the client's view of the lines,
+totals, payment terms and terms, and warns when the discount is above your limit; **Save draft**
+saves it. A meeting card's **Create quotation** opens it linked to that meeting.
+
+**Mark sent dialog:** Email (to the lead's email unless another is typed; ERPNext sends it with
+the TBO PDF), WhatsApp (opens `wa.me` with the message) or Already sent, the message, and the
+follow-up days (3; 0 for none). **Status dialog:** a note; Rejected asks why and can close the
+lead as Closed – Lost with a reason; Accepted says the deal will be created. **Revision history:**
+each version with its total, discount, validity and what changed from the one before.
+
+**Settings → TBO → Lead pipeline** (System Managers): the switches, the reminder minutes, the
+quotation defaults (validity, follow-up days, terms, payment terms, print format, the roles that
+edit prices) and, once quotations are on, the **Quotation catalogue**: packages (New package /
+Edit: name, category, duration, validity, description, lines with service, description, qty and
+rate) and each service's rate, editable only by those roles.
 
 **Call today → Triage:** the suggested-close leads close as **Closed – Lost** (no more Junk /
 Unqualified choice).
@@ -73,17 +108,21 @@ Unqualified choice).
 | `frontend/src/tbo/leadPipeline/api.js` | Method names, the shared access resource, the write calls, `useLeadPipelineRefresh` (the `tbo_lead_pipeline_update` realtime event and window focus). |
 | `frontend/src/tbo/leadPipeline/pipeline.js` | Pure rules: status tones, card actions, link labels, date and time, schedule and MOM validation and payloads, merging an AI draft. Tested in `frontend/tests/unit/tboLeadPipeline.test.js`. |
 | `frontend/src/tbo/leadPipeline/LeadMeetings.vue` | The Meetings tab. |
-| `frontend/src/tbo/leadPipeline/MeetingDialog.vue`, `MomDialog.vue`, `MeetingStatusChip.vue` | Schedule / reschedule, the MOM form, the status chip. |
+| `frontend/src/tbo/leadPipeline/MeetingDialog.vue`, `MomDialog.vue`, `StatusChip.vue` | Schedule / reschedule, the MOM form, the status chip (meetings and quotations). |
+| `frontend/src/tbo/leadPipeline/quotes.js` | Pure quotation rules: status tones, row actions, families, revision change lines, print and PDF links. Tested with the pipeline rules. |
+| `frontend/src/tbo/leadPipeline/LeadQuotations.vue`, `MarkSentDialog.vue`, `QuoteStatusDialog.vue`, `RevisionsDialog.vue` | The Quotations tab and its dialogs. |
+| `frontend/src/tbo/leadPipeline/QuotationCatalogue.vue`, `PackageDialog.vue` | The catalogue on the settings page. |
+| `frontend/src/tbo/finance/QuotationDialog.vue`, `TotalsBlock.vue` | The shared quotation dialog (deal and lead) and its totals. |
 | `frontend/src/tbo/leadPipeline/LeadPipelineSummary.vue` | The side panel summary and the follow-up flag. |
 | `frontend/src/tbo/leadPipeline/PipelineSettings.vue` | The settings page. |
-| `frontend/src/tbo/leadPipeline/navigation.js` | `leadMeetingsTab()` and `useConversionLock()`. |
+| `frontend/src/tbo/leadPipeline/navigation.js` | `leadMeetingsTab()`, `leadQuotationsTab()` and `useConversionLock()`. |
 
 Small hooks into upstream files:
 
 | Upstream file | Hook |
 | --- | --- |
-| `frontend/src/pages/Lead.vue`, `frontend/src/pages/MobileLead.vue` | `leadMeetingsTab(...)` in the tabs; `<LeadPipelineSummary>` before `<LeadSmartPanel>`; the Convert button's `Tooltip` has `v-if="!tboConversionLocked"`. |
-| `frontend/src/components/Activities/Activities.vue` | `<LeadMeetings v-else-if="title == 'Meetings'">` after `DealFinance`. |
+| `frontend/src/pages/Lead.vue`, `frontend/src/pages/MobileLead.vue` | `leadMeetingsTab(...)` and `leadQuotationsTab(...)` in the tabs; `<LeadPipelineSummary>` before `<LeadSmartPanel>`; the Convert button's `Tooltip` has `v-if="!tboConversionLocked"`. |
+| `frontend/src/components/Activities/Activities.vue` | `<LeadMeetings v-else-if="title == 'Meetings'">` after `DealFinance`; the stock `QuotationsList` only for `CRM Deal`, and `<LeadQuotations>` for the lead's Quotations tab. |
 | `frontend/src/components/Activities/ActivityHeader.vue` | No "New" menu on the Meetings tab. |
 | `frontend/src/components/Settings/Settings.vue` | **Lead pipeline** in the TBO group. |
 

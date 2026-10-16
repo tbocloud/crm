@@ -42,7 +42,9 @@ contact from the deal. You can set the company, valid till, taxes template,
 items (qty, rate, discount %), additional discount %, commission % and terms.
 Under each % it shows "Your limit" from the approval settings. **Save draft**
 creates or updates a draft Quotation. **Open in ERPNext** is there for anything
-more advanced. On a phone the item rows stack.
+more advanced. On a phone the item rows stack. It also offers payment terms and a terms template,
+and shows live totals (subtotal, discount, tax, grand total). The same dialog serves the lead's
+Quotations tab (`docs/tbo-lead-pipeline.md`), with presets and a review step.
 
 **BDE conversion** (`/crm/bde-conversion`, in the sidebar while the workflow is
 on). Leads, deals, conversion rate, submitted quotations, won deals and won
